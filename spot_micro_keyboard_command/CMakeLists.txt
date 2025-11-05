@@ -9,6 +9,27 @@ find_package(catkin REQUIRED COMPONENTS
   spot_micro_motion_cmd
 )
 
+################################################
+## Declare ROS messages, services and actions ##
+################################################
+
+## Generate services in the 'srv' folder
+add_service_files(
+  FILES
+  MotionCmd.srv
+  PoseCmd.srv 
+)
+
+## Generate added messages and services with any dependencies listed here
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  geometry_msgs
+)
+
+###################################
+## catkin specific configuration ##
+###################################
 catkin_package(
   CATKIN_DEPENDS rospy std_msgs geometry_msgs std_srvs spot_micro_motion_cmd
 )

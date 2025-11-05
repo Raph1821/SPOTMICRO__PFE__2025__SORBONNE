@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(spot_micro_motion_cmd)
+add_compile_options(-std=c++14)
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
@@ -27,6 +28,7 @@ find_package(Eigen3 REQUIRED)
 add_service_files(
   FILES
   MotionCmd.srv
+  PoseCmd.srv 
 )
 
 ## Generate added messages and services with any dependencies listed here

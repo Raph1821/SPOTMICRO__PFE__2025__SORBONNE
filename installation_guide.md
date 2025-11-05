@@ -240,30 +240,48 @@ Complete installation guide for Spot Micro Quadruped Robot on Raspberry Pi 4B 8G
    cd ~/catkin_ws/src
    ```
 
-2. **Clone the Spot Micro repository:**
+2. **Clone the Spot Micro repository with submodules:**
    ```bash
-   # If using Git
-   git clone https://github.com/YOUR_USERNAME/spotMicro.git
+   # Clone with --recursive flag to automatically initialize all submodules
+   git clone --recursive https://github.com/Raph1821/SPOTMICRO__PFE__2025__SORBONNE__SACLAY.git
    
-   # Or copy your local folder
-   # cp -r /path/to/spotMicro ~/catkin_ws/src/
+   # Navigate to repository
+   cd ~/catkin_ws/src/SPOTMICRO__PFE__2025__SORBONNE__SACLAY
    ```
 
-3. **Initialize and update git submodules (CRITICAL!):**
+3. **If submodules are missing, clone them manually:**
+   
+   **Check if submodules exist:**
    ```bash
-   cd ~/catkin_ws/src/spotMicro
-   git submodule update --init --recursive
+   ls ros-i2cpwmboard/
    ```
    
-   This will initialize:
-   - `ros-i2cpwmboard/` (I2C PWM board driver)
-   - `spot_micro_motion_cmd/libs/spot_micro_kinematics_cpp/` (Kinematics library)
-   - `spot_micro_plot/scripts/spot_micro_kinematics_python/` (Python kinematics)
-
-4. **Verify submodules are loaded:**
+   **If folder doesn't exist or is empty, clone manually:**
    ```bash
-   git submodule status
-   # Should show commit hashes (not minus signs)
+   # Clone i2cpwm_board package
+   git clone https://github.com/mentor-dyun/ros-i2cpwmboard.git ros-i2cpwmboard
+   
+   # Clone spot_micro_kinematics_cpp
+   mkdir -p spot_micro_motion_cmd/libs
+   cd ~/catkin_ws/src/SPOTMICRO__PFE__2025__SORBONNE__SACLAY/spot_micro_motion_cmd/libs
+   git clone https://github.com/mike4192/spot_micro_kinematics_cpp.git 
+   
+   # Clone spot_micro_kinematics_python
+   mkdir -p spot_micro_plot/scripts
+   cd ~/catkin_ws/src/SPOTMICRO__PFE__2025__SORBONNE__SACLAY/spot_micro_plot/scripts
+   git clone https://github.com/mike4192/spot_micro_kinematics_python.git 
+   ```
+
+4. **Verify all packages are present:**
+   ```bash
+   cd ~/catkin_ws/src/SPOTMICRO__PFE__2025__SORBONNE__SACLAY
+   # Check i2cpwm_board
+   ls ros-i2cpwmboard/
+   # Should show: CMakeLists.txt, package.xml, src/, etc.
+   
+   # Check kinematics libraries
+   ls spot_micro_motion_cmd/libs/spot_micro_kinematics_cpp/
+   ls spot_micro_plot/scripts/spot_micro_kinematics_python/
    ```
 
 ---
@@ -275,7 +293,7 @@ Complete installation guide for Spot Micro Quadruped Robot on Raspberry Pi 4B 8G
 **Run the automatic executable script:**
 
 ```bash
-cd ~/catkin_ws/src/spotMicro
+cd ~/catkin_ws/src/SPOTMICRO__PFE__2025__SORBONNE__SACLAY
 ./make_py_executable.sh
 ```
 
@@ -296,9 +314,9 @@ Made executable:
 **Alternative (if script doesn't run):**
 ```bash
 # First make the script itself executable
-chmod +x make_executable.sh
+chmod +x make_py_executable.sh
 # Then run it
-./make_executable.sh
+./make_py_executable.sh
 ```
 
 **Manual method (if script fails):**
@@ -380,7 +398,7 @@ chmod +x spot_micro_plot/scripts/spotMicroPlot.py
 4. **Configure servo calibration (if needed):**
    ```bash
    # Edit servo configuration file
-   nano ~/catkin_ws/src/spotMicro/spot_micro_motion_cmd/config/spot_micro_motion_cmd.yaml
+   nano ~/catkin_ws/src/SPOTMICRO__PFE__2025__SORBONNE__SACLAY/spot_micro_motion_cmd/config/spot_micro_motion_cmd.yaml
    
    # Adjust servo min/max/center values as needed
    ```
@@ -397,12 +415,12 @@ rospack list | grep spot_micro
 
 **Expected output:**
 ```
-spot_micro_joy /home/ubuntu/catkin_ws/src/spotMicro/spot_micro_joy
-spot_micro_keyboard_command /home/ubuntu/catkin_ws/src/spotMicro/spot_micro_keyboard_command
-spot_micro_launch /home/ubuntu/catkin_ws/src/spotMicro/spot_micro_launch
-spot_micro_motion_cmd /home/ubuntu/catkin_ws/src/spotMicro/spot_micro_motion_cmd
-spot_micro_plot /home/ubuntu/catkin_ws/src/spotMicro/spot_micro_plot
-spot_micro_rviz /home/ubuntu/catkin_ws/src/spotMicro/spot_micro_rviz
+spot_micro_joy /home/ubuntu/catkin_ws/src/SPOTMICRO__PFE__2025__SORBONNE__SACLAY/spot_micro_joy
+spot_micro_keyboard_command /home/ubuntu/catkin_ws/src/SPOTMICRO__PFE__2025__SORBONNE__SACLAY/spot_micro_keyboard_command
+spot_micro_launch /home/ubuntu/catkin_ws/src/SPOTMICRO__PFE__2025__SORBONNE__SACLAY/spot_micro_launch
+spot_micro_motion_cmd /home/ubuntu/catkin_ws/src/SPOTMICRO__PFE__2025__SORBONNE__SACLAY/spot_micro_motion_cmd
+spot_micro_plot /home/ubuntu/catkin_ws/src/SPOTMICRO__PFE__2025__SORBONNE__SACLAY/spot_micro_plot
+spot_micro_rviz /home/ubuntu/catkin_ws/src/SPOTMICRO__PFE__2025__SORBONNE__SACLAY/spot_micro_rviz
 ```
 
 ---
@@ -522,7 +540,7 @@ catkin build
 
 **Solution:**
 ```bash
-cd ~/catkin_ws/src/spotMicro
+cd ~/catkin_ws/src/SPOTMICRO__PFE__2025__SORBONNE__SACLAY
 ./make_executable.sh
 
 # If script itself not executable:
@@ -538,12 +556,19 @@ chmod +x make_executable.sh
 
 **Solution:**
 ```bash
-cd ~/catkin_ws/src/spotMicro
+cd ~/catkin_ws/src/SPOTMICRO__PFE__2025__SORBONNE__SACLAY
+
+# Try initializing submodules first
 git submodule update --init --recursive
 
-# Verify
-git submodule status
-# Should NOT show minus signs (-)
+# If that doesn't work, clone manually:
+git clone https://gitlab.com/bradanlane/ros-i2cpwmboard.git ros-i2cpwmboard
+
+mkdir -p spot_micro_motion_cmd/libs
+git clone https://github.com/mike4192/spot_micro_kinematics_cpp.git spot_micro_motion_cmd/libs/spot_micro_kinematics_cpp
+
+mkdir -p spot_micro_plot/scripts
+git clone https://github.com/mike4192/spot_micro_kinematics_python.git spot_micro_plot/scripts/spot_micro_kinematics_python
 ```
 
 ---
@@ -581,10 +606,10 @@ sudo reboot
 **Solution:**
 ```bash
 # Check config file exists
-ls ~/catkin_ws/src/spotMicro/spot_micro_motion_cmd/config/
+ls ~/catkin_ws/src/SPOTMICRO__PFE__2025__SORBONNE__SACLAY/spot_micro_motion_cmd/config/
 
 # Edit if needed
-nano ~/catkin_ws/src/spotMicro/spot_micro_motion_cmd/config/spot_micro_motion_cmd.yaml
+nano ~/catkin_ws/src/SPOTMICRO__PFE__2025__SORBONNE__SACLAY/spot_micro_motion_cmd/config/spot_micro_motion_cmd.yaml
 
 # Rebuild
 cd ~/catkin_ws

@@ -1,0 +1,8 @@
+# Request
+float64 cmd_vel_x
+float64 cmd_vel_y
+float64 cmd_yaw
+---
+# Response
+bool success
+string message
