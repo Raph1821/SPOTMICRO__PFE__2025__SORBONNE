@@ -56,7 +56,8 @@
   <build_depend>geometry_msgs</build_depend>  
   <build_depend>std_srvs</build_depend>  
   <build_depend>sensor_msgs</build_depend>  
-  <build_depend>spot_micro_motion_cmd</build_depend>  
+  <build_depend>spot_micro_motion_cmd</build_depend>
+  <build_depend>message_generation</build_depend>  
   
   <build_export_depend>joy</build_export_depend>
   <build_export_depend>rospy</build_export_depend>
@@ -72,7 +73,8 @@
   <exec_depend>geometry_msgs</exec_depend>  
   <exec_depend>std_srvs</exec_depend>  
   <exec_depend>sensor_msgs</exec_depend>  
-  <exec_depend>spot_micro_motion_cmd</exec_depend>  
+  <exec_depend>spot_micro_motion_cmd</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

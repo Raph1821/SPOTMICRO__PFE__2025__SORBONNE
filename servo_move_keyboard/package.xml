@@ -57,6 +57,10 @@
   <build_depend>i2cpwm_board</build_depend>
   <exec_depend>i2cpwm_board</exec_depend>
 
+  <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
+
+
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- Other tools can request additional information be placed here -->
