@@ -7,6 +7,9 @@ find_package(catkin REQUIRED COMPONENTS
   urdf
   xacro
   joint_state_publisher
+  std_msgs
+  geometry_msgs
+  message_generation
 )
 
 ################################################
@@ -31,7 +34,7 @@ generate_messages(
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  CATKIN_DEPENDS rospy roscpp urdf xacro joint_state_publisher
+  CATKIN_DEPENDS rospy roscpp urdf xacro joint_state_publisher std_msgs geometry_msgs message_runtime
 )
 
 install(DIRECTORY launch rviz urdf

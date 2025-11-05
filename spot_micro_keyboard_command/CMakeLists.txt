@@ -3,10 +3,12 @@ project(spot_micro_keyboard_command)
 
 find_package(catkin REQUIRED COMPONENTS
   rospy
+  roscpp
   std_msgs
   geometry_msgs
   std_srvs
   spot_micro_motion_cmd
+  message_generation
 )
 
 ################################################
@@ -31,7 +33,7 @@ generate_messages(
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  CATKIN_DEPENDS rospy std_msgs geometry_msgs std_srvs spot_micro_motion_cmd
+  CATKIN_DEPENDS rospy roscpp std_msgs geometry_msgs std_srvs message_runtime spot_micro_motion_cmd
 )
 
 catkin_install_python(PROGRAMS scripts/spotMicroKeyboardMove.py

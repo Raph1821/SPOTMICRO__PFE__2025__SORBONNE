@@ -1,7 +1,12 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(spot_micro_launch)
 
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+  rospy
+  roscpp
+  std_msgs
+  geometry_msgs
+  message_generation)
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -24,7 +29,9 @@ generate_messages(
 ###################################
 ## catkin specific configuration ##
 ###################################
-catkin_package()
+catkin_package(
+  CATKIN_DEPENDS rospy roscpp std_msgs message_runtime geometry_msgs
+)
 
 install(DIRECTORY launch
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}

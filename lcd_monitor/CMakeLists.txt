@@ -3,8 +3,10 @@ project(lcd_monitor)
 
 find_package(catkin REQUIRED COMPONENTS
   rospy
+  roscpp
   std_msgs
   geometry_msgs
+  message_generation
 )
 
 catkin_python_setup()
@@ -31,5 +33,5 @@ generate_messages(
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  CATKIN_DEPENDS rospy std_msgs geometry_msgs
+  CATKIN_DEPENDS rospy roscpp std_msgs geometry_msgs message_runtime
 )

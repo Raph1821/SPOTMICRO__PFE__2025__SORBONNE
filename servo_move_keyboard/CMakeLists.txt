@@ -3,7 +3,11 @@ project(servo_move_keyboard)
 
 find_package(catkin REQUIRED COMPONENTS
   rospy
+  roscpp
   i2cpwm_board
+  geometry_msgs
+  std_msgs
+  message_generation
 )
 
 ################################################
@@ -28,7 +32,7 @@ generate_messages(
 ## catkin specific configuration ##
 ###################################
 catkin_package(
-  CATKIN_DEPENDS rospy i2cpwm_board
+  CATKIN_DEPENDS rospy roscpp i2cpwm_board std_msgs geometry_msgs message_runtime
 )
 
 catkin_install_python(PROGRAMS 
