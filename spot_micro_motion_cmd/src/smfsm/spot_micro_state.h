@@ -1,8 +1,6 @@
 #pragma once
 #include "spot_micro_kinematics/spot_micro_kinematics.h"
-
 #include "rate_limited_first_order_filter.h"
-#include "spot_micro_kinematics/spot_micro_kinematics.h"
 #include "command.h"
 
 // Forward declaration of classes and structs. Can't include
