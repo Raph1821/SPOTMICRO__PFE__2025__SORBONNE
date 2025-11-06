@@ -54,9 +54,10 @@ catkin_package(
 ## Specify additional locations of header files
 include_directories(
   include
+  include/spot_micro_motion_cmd
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
-  libs/spot_micro_kinematics_cpp/include/spot_micro_kinematics
+  libs/spot_micro_kinematics_cpp/include
 )
 
 ## Declare a C++ executable

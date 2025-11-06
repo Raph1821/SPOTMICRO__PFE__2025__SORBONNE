@@ -1,5 +1,5 @@
 // Node file to create object and initialising the ROS node
-#include "spot_micro_motion_cmd.h" 
+#include "spot_micro_motion_cmd.h"
 #include <iostream>
 
 
