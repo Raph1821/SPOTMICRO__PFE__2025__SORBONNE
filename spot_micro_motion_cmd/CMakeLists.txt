@@ -55,6 +55,8 @@ catkin_package(
 include_directories(
   include
   include/spot_micro_motion_cmd
+  src/rate_limited_first_order_filter
+  src/smfsm
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIRS}
   libs/spot_micro_kinematics_cpp/include
