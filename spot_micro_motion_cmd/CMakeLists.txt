@@ -75,6 +75,7 @@ add_executable(${PROJECT_NAME}_node
   src/smfsm/spot_micro_walk.cpp
   libs/spot_micro_kinematics_cpp/src/spot_micro_kinematics.cpp
   libs/spot_micro_kinematics_cpp/src/spot_micro_leg.cpp
+  libs/spot_micro_kinematics_cpp/src/utils.cpp
 )
 
 ## Add cmake target dependencies of the executable
