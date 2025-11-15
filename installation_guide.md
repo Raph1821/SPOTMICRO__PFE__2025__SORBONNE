@@ -239,7 +239,17 @@ Complete installation guide for Spot Micro Quadruped Robot on Raspberry Pi 4B 8G
    ```bash
    cd ~/catkin_ws/src
    ```
-2. **Verify all packages are present:**
+
+2. **Clone the Spot Micro repository with submodules:**
+   ```bash
+   # Clone 
+   git clone https://github.com/Raph1821/SPOTMICRO__PFE__2025__SORBONNE__SACLAY.git
+   
+   # Navigate to repository
+   cd ~/catkin_ws/src/SPOTMICRO__PFE__2025__SORBONNE__SACLAY
+   ```
+
+3. **Verify all packages are present:**
    ```bash
    cd ~/catkin_ws/src/SPOTMICRO__PFE__2025__SORBONNE__SACLAY
    # Check i2cpwm_board
