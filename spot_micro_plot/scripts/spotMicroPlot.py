@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+import sys
+import os
+
+# Ajouter le dossier spot_micro_kinematics_python au PYTHONPATH
+sys.path.append(os.path.join(os.path.dirname(__file__), "spot_micro_kinematics_python"))
 
 import numpy as np
 import time
