@@ -38,6 +38,11 @@ catkin_install_python(PROGRAMS scripts/spotMicroPlot.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
+install(
+  DIRECTORY scripts/spot_micro_kinematics_python
+  DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION}
+)
+
 install(DIRECTORY launch
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )

@@ -452,7 +452,7 @@ roslaunch spot_micro_motion_cmd motion_cmd.launch run_standalone:=true debug_mod
 
 **Terminal 2:**
 ```bash
-roslaunch spot_micro_keyboard_command keyboard_command.launch
+roslaunch spot_micro_keyboard_command keyboard_command.launch run_rviz:=true run_plot:=true
 ```
 
 **Expected output:**
