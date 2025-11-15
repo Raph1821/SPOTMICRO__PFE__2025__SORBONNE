@@ -6,4 +6,4 @@
 	url = https://github.com/mike4192/spot_micro_kinematics_python.git
 [submodule "ros-i2cpwmboard"]
 	path = ros-i2cpwmboard
-	url = https://gitlab.com/bradanlane/ros-i2cpwmboard.git
+	url = https://github.com/mentor-dyun/ros-i2cpwmboard.git

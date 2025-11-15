@@ -233,7 +233,7 @@ Complete installation guide for Spot Micro Quadruped Robot on Raspberry Pi 4B 8G
 
 ---
 
-### Step 5: Verify packages
+### Step 5: Clone Project Repository
 
 1. **Navigate to workspace source directory:**
    ```bash
@@ -242,14 +242,39 @@ Complete installation guide for Spot Micro Quadruped Robot on Raspberry Pi 4B 8G
 
 2. **Clone the Spot Micro repository with submodules:**
    ```bash
-   # Clone 
-   git clone https://github.com/Raph1821/SPOTMICRO__PFE__2025__SORBONNE__SACLAY.git
+   # Clone with --recursive flag to automatically initialize all submodules
+   git clone --recursive https://github.com/Raph1821/SPOTMICRO__PFE__2025__SORBONNE__SACLAY.git
    
    # Navigate to repository
    cd ~/catkin_ws/src/SPOTMICRO__PFE__2025__SORBONNE__SACLAY
    ```
 
-3. **Verify all packages are present:**
+3. **If submodules are missing, clone them manually:**
+   
+   **Check if submodules exist:**
+   ```bash
+   ls ros-i2cpwmboard/
+   ls spot_micro_motion_cmd/libs/spot_micro_kinematics_cpp/
+   ls spot_micro_plot/scripts/spot_micro_kinematics_python/
+   ```
+   
+   **If folder doesn't exist or is empty, clone manually:**
+   ```bash
+   # Clone i2cpwm_board package
+   git clone https://github.com/mentor-dyun/ros-i2cpwmboard.git ros-i2cpwmboard
+   
+   # Clone spot_micro_kinematics_cpp
+   mkdir -p spot_micro_motion_cmd/libs
+   cd ~/catkin_ws/src/SPOTMICRO__PFE__2025__SORBONNE__SACLAY/spot_micro_motion_cmd/libs
+   git clone https://github.com/mike4192/spot_micro_kinematics_cpp.git 
+   
+   # Clone spot_micro_kinematics_python
+   mkdir -p spot_micro_plot/scripts
+   cd ~/catkin_ws/src/SPOTMICRO__PFE__2025__SORBONNE__SACLAY/spot_micro_plot/scripts
+   git clone https://github.com/mike4192/spot_micro_kinematics_python.git 
+   ```
+
+4. **Verify all packages are present:**
    ```bash
    cd ~/catkin_ws/src/SPOTMICRO__PFE__2025__SORBONNE__SACLAY
    # Check i2cpwm_board
