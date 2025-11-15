@@ -2,6 +2,12 @@
 
 import numpy as np
 import time
+import sys
+import os
+
+# Add the script directory to Python path to find local modules
+script_dir = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, script_dir)
 
 import rospy
 from spot_micro_kinematics_python.spot_micro_stick_figure import SpotMicroStickFigure

@@ -9,6 +9,9 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 
+# Use Python setup for proper module installation
+catkin_python_setup()
+
 ################################################
 ## Declare ROS messages, services and actions ##
 ################################################
@@ -38,9 +41,18 @@ catkin_install_python(PROGRAMS scripts/spotMicroPlot.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
+# Install the Python module properly
 install(
   DIRECTORY scripts/spot_micro_kinematics_python/
-  DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION}
+  DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION}/spot_micro_kinematics_python
+  FILES_MATCHING PATTERN "*.py"
+)
+
+# Install the entire scripts directory to make local imports work
+install(
+  DIRECTORY scripts/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/scripts
+  FILES_MATCHING PATTERN "*.py"
 )
 
 install(DIRECTORY launch
