@@ -21,7 +21,7 @@
 
     <!-- If run_rviz is true, run the rviz node by including it's launch file -->
     <group if="$(arg run_rviz)">
-        <include file="$(find spot_micro_rviz)/launch/show_model.launch" />
+        <include file="$(find spot_micro_rviz)/launch/show_and_move_model_via_gui.launch" />
     </group>
     
 </launch>
