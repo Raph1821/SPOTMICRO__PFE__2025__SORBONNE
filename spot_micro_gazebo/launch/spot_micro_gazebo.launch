@@ -1,0 +1,55 @@
+<launch>
+  
+  <!-- Arguments -->
+  <arg name="world" default="empty"/>
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+
+  <!-- Load robot description -->
+  <param name="robot_description" 
+         command="$(find xacro)/xacro $(find spot_micro_gazebo)/urdf/spot_micro_gazebo.xacro"/>
+
+  <!-- Start Gazebo -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find spot_micro_gazebo)/worlds/$(arg world).world"/>
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="headless" value="$(arg headless)"/>
+    <arg name="debug" value="$(arg debug)"/>
+  </include>
+
+  <!-- Spawn robot in Gazebo -->
+  <node name="spawn_spot_micro" pkg="gazebo_ros" type="spawn_model" 
+        args="-urdf -param robot_description -model spot_micro -z 0.3"
+        output="screen"/>
+
+  <!-- Load joint controller configurations -->
+  <rosparam file="$(find spot_micro_gazebo)/config/joint_control.yaml" command="load"/>
+
+  <!-- Start controllers -->
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+        output="screen" args="joint_state_controller
+                              front_right_shoulder_position_controller
+                              front_right_leg_position_controller
+                              front_right_foot_position_controller
+                              rear_right_shoulder_position_controller
+                              rear_right_leg_position_controller
+                              rear_right_foot_position_controller
+                              rear_left_shoulder_position_controller
+                              rear_left_leg_position_controller
+                              rear_left_foot_position_controller
+                              front_left_shoulder_position_controller
+                              front_left_leg_position_controller
+                              front_left_foot_position_controller"/>
+
+  <!-- Robot state publisher -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+
+  <!-- Bridge: servo commands to Gazebo controllers -->
+  <node name="servo_to_gazebo_bridge" pkg="spot_micro_gazebo" type="servo_to_gazebo_bridge.py" output="screen"/>
+
+</launch>

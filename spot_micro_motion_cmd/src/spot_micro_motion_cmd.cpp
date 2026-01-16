@@ -154,25 +154,30 @@ void SpotMicroMotionCmd::runOnce() {
   if (smnc_.debug_mode) {
     std::cout<<"from Runonce \n";
   }
-
+  
   // Call method to handle input commands
   handleInputCommands();
-
+  
+  // Compute servo angles from kinematics
+  setServoCommandMessageData();
+  
+  // Publish servo commands
+  publishServoProportionalCommand();
+  
   // Consume all event commands.
-  // This resets all event commands if they were true. Doing this enforces a rising edge detection
   resetEventCommands();
-
+  
   // Only publish body state message in debug mode
   if (smnc_.plot_mode) {
     publishBodyState();
   }
-
+  
   // Publish lcd monitor data
   publishLcdMonitorData();
-
+  
   // Broadcast dynamic transforms
   publishDynamicTransforms();
-
+  
   if (smnc_.publish_odom) {
     // Integrate robot odometry
     integrateOdometry();

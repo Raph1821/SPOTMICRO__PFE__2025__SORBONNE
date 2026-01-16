@@ -1,3 +1,4 @@
 *.pyc
 .vscode/
 *.swp
+*:Zone.Identifier
