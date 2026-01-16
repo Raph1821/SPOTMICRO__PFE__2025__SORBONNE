@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>spot_micro_pybullet</name>
+  <version>0.1.0</version>
+  <description>PyBullet physics simulation for SpotMicro robot</description>
+
+  <maintainer email="your_email@example.com">Your Name</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <depend>rospy</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>i2cpwm_board</depend>
+  
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>rviz</exec_depend>
+
+  <export>
+  </export>
+</package>
