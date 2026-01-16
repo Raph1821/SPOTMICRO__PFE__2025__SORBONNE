@@ -1,3 +1,17 @@
+# Simulation
+terminal 1:
+```bash
+roslaunch spot_micro_motion_cmd motion_cmd.launch run_standalone:=true debug_mode:=true
+```
+terminal 2:
+```bash
+roslaunch spot_micro_keyboard_command keyboard_command.launch
+```
+terminal 3:
+```bash
+roslaunch spot_micro_pybullet pybullet_simulation.launch rviz:=false use_gui:=true
+```
+
 # Spot Micro Quadruped Project
 
 ![Spot Micro Walking](assets/spot_micro_walking.gif)
