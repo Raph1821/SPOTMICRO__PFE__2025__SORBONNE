@@ -25,8 +25,11 @@ void SpotMicroIdleState::handleInputCommands(const smk::BodyState& body_state,
     changeState(smmc, std::make_unique<SpotMicroTransitionStandState>());
   
   } else {
-    // Otherwise, just command idle servo commands
-    smmc->publishZeroServoAbsoluteCommand();
+    // Otherwise, command idle servo commands (lie down stance)
+    // Set servo command message data based on current body state
+    smmc->setServoCommandMessageData();
+    // Publish proportional command so PyBullet can receive it
+    smmc->publishServoProportionalCommand();
   }
 
 }
