@@ -1,0 +1,90 @@
+<launch>
+  
+  <!-- Arguments -->
+  <arg name="use_gui" default="true" />
+  <arg name="rviz" default="true" />
+  <arg name="obstacles" default="true" />  <!-- Enable test obstacles for lidar -->
+  <arg name="slam" default="true" />  <!-- Enable SLAM -->
+  
+  <!-- Load robot description (use PyBullet URDF) -->
+  <param name="robot_description" 
+         command="$(find xacro)/xacro $(find spot_micro_pybullet)/urdf/spot_micro_pybullet_gen_ros.urdf" />
+  
+  <!-- Start motion command node to publish TF transforms (base_footprint, odom, etc.) -->
+  <!-- This is required for SLAM to work properly -->
+  <include file="$(find spot_micro_motion_cmd)/launch/motion_cmd.launch">
+    <arg name="run_standalone" value="true" />
+    <arg name="debug_mode" value="false" />
+  </include> 
+
+  <!-- Start PyBullet simulation -->
+  <node name="pybullet_sim" pkg="spot_micro_pybullet" type="spot_micro_pybullet_sim.py" output="screen">
+    <param name="use_gui" value="$(arg use_gui)" />
+    <param name="rate" value="50" />
+    <!-- Lidar parameters -->
+    <param name="lidar_enabled" value="true" />
+    <param name="lidar_rate" value="10" />  <!-- Hz, typical for RPLidar A1 -->
+    <param name="lidar_samples" value="360" />  <!-- 360 degrees -->
+    <param name="lidar_min_range" value="0.15" />  <!-- meters -->
+    <param name="lidar_max_range" value="12.0" />  <!-- meters -->
+    <!-- Obstacle parameters -->
+    <param name="enable_obstacles" value="$(arg obstacles)" />  <!-- Enable test obstacles -->
+  </node>
+
+  <!-- Publish robot state to TF -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+  <!-- Launch hector mapping node for SLAM -->
+  <group if="$(arg slam)">
+    <node pkg="hector_mapping" type="hector_mapping" name="hector_mapping" output="screen"> 
+        <!-- Frame names -->
+        <param name="map_frame" value="map" />
+        <param name="base_frame" value="base_footprint" />
+        <param name="odom_frame" value="odom" />
+        
+        <!-- Tf use -->
+        <param name="use_tf_scan_transformation" value="true"/>
+        <param name="use_tf_pose_start_estimate" value="false"/>
+        <param name="pub_map_odom_transform" value="true"/>
+        
+        <!-- Map size / start point -->
+        <param name="map_resolution" value="0.050"/>
+        <param name="map_size" value="2048"/>
+        <param name="map_start_x" value="0.5"/>
+        <param name="map_start_y" value="0.5" />
+        <param name="map_multi_res_levels" value="2" />
+        
+        <!-- Map update parameters -->
+        <param name="update_factor_free" value="0.4"/>
+        <param name="update_factor_occupied" value="0.9" />    
+        <param name="map_update_distance_thresh" value="0.4"/>
+        <param name="map_update_angle_thresh" value="0.06" />
+        <param name="laser_z_min_value" value = "-1.0" />
+        <param name="laser_z_max_value" value = "1.0" />
+        
+        <!-- Advertising config --> 
+        <param name="advertise_map_service" value="true"/>
+        
+        <param name="scan_subscriber_queue_size" value="5"/>
+        <param name="scan_topic" value="scan"/>
+        
+        <param name="tf_map_scanmatch_transform_frame_name" value="scanmatcher_frame" />
+    </node>
+  </group>
+
+  <!-- Launch RViz for visualization with SLAM -->
+  <group if="$(arg rviz)">
+    <group if="$(arg slam)">
+      <!-- RViz with SLAM configuration -->
+      <node name="rviz" pkg="rviz" type="rviz" 
+            args="-d $(find spot_micro_rviz)/rviz/spot_micro_slam.rviz" />
+    </group>
+    <group unless="$(arg slam)">
+      <!-- RViz without SLAM -->
+      <node name="rviz" pkg="rviz" type="rviz" 
+            args="-d $(find spot_micro_rviz)/rviz/default.rviz" />
+    </group>
+  </group>
+
+</launch>
+
