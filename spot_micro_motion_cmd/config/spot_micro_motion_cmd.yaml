@@ -14,8 +14,8 @@ default_stand_height: 0.155   # Height of robot body center when standing
 #stand_back_x_offset: -0.000      # Fwd/back offset of back two legs from default stance (for 8-phase gait)
 stand_front_x_offset: -0.010   # Offset better tuned for trot gait
 stand_back_x_offset: -0.010      # Offset better tuned for trot gait
-lie_down_height: 0.083        # Height of body center when sitting
-lie_down_foot_x_offset: 0.065 # Fwd/back offset of all(?) feet from default stance when sitting 
+lie_down_height: 0.060        # Height of body center when sitting (lowered for more hip bend)
+lie_down_foot_x_offset: 0.020 # Fwd/back offset of all(?) feet from default stance when sitting (reduced for more upright lower legs) 
 
 # Servo parameters
 num_servos: 12
