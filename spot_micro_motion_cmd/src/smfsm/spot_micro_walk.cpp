@@ -208,12 +208,9 @@ smk::Point SpotMicroWalkState::stanceController(
   // timestep. Note that y speed command is really sideways velocity command, which 
   // is in the z direction of robot coordinate system. Stance foot position hard
   // coded to 0 height here in second equation
-  // For lateral movement (y_speed), use alpha scaling to match swing leg controller
-  // This ensures consistent movement between stance and swing phases for trot gait
-  float alpha = smnc.alpha;
   Vector3f delta_pos(-cmd.getXSpeedCmd() * dt,
                      (1.0f/h_tau)*(0.0f - foot_pos.y) * dt,
-                     -alpha * cmd.getYSpeedCmd() * dt);
+                     -cmd.getYSpeedCmd() * dt);
 
   // Create rotation matrix for yaw rate
   // For turning in place, we need to ensure rotation is around robot center (origin)
@@ -277,9 +274,12 @@ smk::Point SpotMicroWalkState::swingLegController(
   Vector3f new_foot_pos_vec;
 
   // Create delta position vector for touchdown location
+  // For lateral movement (y_speed), ensure consistent scaling with stance controller
+  // stance moves -y_speed*dt per step over stance_ticks steps = -y_speed*stance_ticks*dt total
+  // swing touchdown should offset by the same total amount (without alpha for y_speed to match stance)
   Vector3f delta_pos(alpha * stance_ticks * dt * cmd.getXSpeedCmd(),
                      0.0f, 
-                     alpha * stance_ticks * dt * cmd.getYSpeedCmd());
+                     -stance_ticks * dt * cmd.getYSpeedCmd());
 
   // Create rotation matrix for yaw rate
   float theta = beta * stance_ticks * dt * -cmd.getYawRateCmd();
