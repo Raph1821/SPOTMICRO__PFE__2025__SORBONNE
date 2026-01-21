@@ -1,0 +1,47 @@
+# Common parameters for all costmaps
+# Spot Micro is a small robot (~15cm wide, ~25cm long)
+
+# Costmap update frequency
+update_frequency: 2.0
+publish_frequency: 1.0
+
+# Robot geometry - Spot Micro dimensions
+# Robot footprint as polygon (in meters, centered on base_link)
+footprint: [[-0.125, -0.075], [-0.125, 0.075], [0.125, 0.075], [0.125, -0.075]]
+# Alternative: use radius for circular approximation
+# robot_radius: 0.15
+
+# Inflation parameters - expand obstacles for safety
+inflation_radius: 0.20
+cost_scaling_factor: 10.0
+
+# Layers configuration
+# We define what we want to track
+plugins:
+  - {name: static_layer, type: 'costmap_2d::StaticLayer'}
+  - {name: obstacle_layer, type: 'costmap_2d::VoxelLayer'}
+  - {name: inflation_layer, type: 'costmap_2d::InflationLayer'}
+
+# Static layer (from map)
+static_layer:
+  enabled: true
+  map_topic: /map
+  subscribe_to_updates: true
+  first_map_only: false
+  unknown_cost_value: -1
+
+# Obstacle layer (from sensors)
+obstacle_layer:
+  enabled: true
+  observation_sources: laser
+  laser: {sensor_frame: lidar_link, data_type: LaserScan, topic: /scan, marking: true, clearing: true, max_obstacle_height: 0.5}
+  track_unknown_space: true
+  footprint_clearing_enabled: true
+  combination_method: 1  # Overwrite method
+  
+# Inflation layer
+inflation_layer:
+  enabled: true
+  cost_scaling_factor: 10.0
+  inflation_radius: 0.20
+

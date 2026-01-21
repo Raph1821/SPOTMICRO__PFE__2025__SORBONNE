@@ -1,0 +1,45 @@
+# Base Local Planner (DWA - Dynamic Window Approach) parameters
+# Controls how the robot moves locally
+
+# Robot configuration
+max_vel_x: 0.4          # Maximum forward velocity (m/s) - matches spot_micro_motion_cmd
+min_vel_x: 0.0          # Minimum forward velocity (allow zero for pure rotation)
+max_vel_theta: 0.35     # Maximum angular velocity (rad/s) - matches spot_micro_motion_cmd
+min_vel_theta: -0.35    # Minimum angular velocity
+
+# Acceleration limits
+acc_lim_x: 0.4          # Linear acceleration limit
+acc_lim_y: 0.0          # No sideways acceleration (Spot Micro walks forward/turn)
+acc_lim_theta: 0.35     # Angular acceleration limit
+
+# VelSpace sampling resolution
+vx_samples: 20
+vy_samples: 1           # Only forward, no lateral
+vtheta_samples: 20
+
+# Tolerances and scoring
+sim_time: 1.7           # Forward simulation time
+sim_granularity: 0.025  # Step size for path simulation
+angular_sim_granularity: 0.025
+
+# Cost function weights
+path_distance_bias: 32.0
+goal_distance_bias: 24.0
+occdist_scale: 0.01  # Reduced from 0.02 to allow closer approach to obstacles
+forward_point_distance: 0.325
+stop_time_buffer: 0.2
+# Allow movement even if path is not perfect
+meter_scoring: true  # Make settings robust against costmap resolution changes
+
+# Rotation
+xy_goal_tolerance: 0.15 # Goal tolerance in meters
+yaw_goal_tolerance: 0.3 # Goal tolerance in radians
+latch_xy_goal_tolerance: true
+
+# Oscillation prevention
+oscillation_reset_dist: 0.05
+oscillation_reset_angle: 0.2
+
+# Debugging
+publish_cost_grid_pc: false
+

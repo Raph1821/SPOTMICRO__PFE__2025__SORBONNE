@@ -375,23 +375,38 @@ class SpotMicroPyBulletSim:
         )
         
         # Add various obstacles
+        # Minimum obstacle height: 0.4m (above lidar height ~0.24m when robot is standing)
+        # Lidar is at base_link (0.155m) + lidar_z_pos (0.085m) = ~0.24m
+        # Use 0.4m to ensure all obstacles are clearly detectable by lidar
+        min_obstacle_height = 0.4  # Ensure all obstacles are detectable by lidar
+        
+        # Robot dimensions for spacing calculations
+        robot_width = 0.15  # Robot width (from footprint: 0.15m total)
+        min_passage_width = robot_width * 1.5  # Minimum passage width: 0.225m
+        box_half_size = 0.3  # Box half-extent (total width: 0.6m)
+        cylinder_radius = 0.15  # Cylinder radius (total width: 0.3m)
+        
+        # Minimum distance between obstacle centers = obstacle_size + min_passage_width
+        min_box_spacing = box_half_size * 2 + min_passage_width  # 0.6 + 0.225 = 0.825m
+        min_cylinder_spacing = cylinder_radius * 2 + min_passage_width  # 0.3 + 0.225 = 0.525m
         
         # 1. Box obstacles (like furniture)
+        # Positions spaced to ensure at least min_passage_width between obstacles
         box_positions = [
-            [1.0, 1.0, 0.2],   # Corner obstacle
-            [-1.5, 0.5, 0.15],  # Medium box
-            [0.5, -1.5, 0.25],  # Tall box
+            [1.2, 1.2, min_obstacle_height],   # Corner obstacle (top-right, orange box)
+            [-1.5, 0.8, min_obstacle_height],  # Medium box (left side) - moved further
+            [0.8, -1.5, min_obstacle_height + 0.1],  # Tall box (bottom-right) - moved further
         ]
         
         for i, pos in enumerate(box_positions):
             height = pos[2]
             box_shape = p.createCollisionShape(
                 p.GEOM_BOX,
-                halfExtents=[0.3, 0.3, height]
+                halfExtents=[box_half_size, box_half_size, height]
             )
             box_visual = p.createVisualShape(
                 p.GEOM_BOX,
-                halfExtents=[0.3, 0.3, height],
+                halfExtents=[box_half_size, box_half_size, height],
                 rgbaColor=[0.7, 0.4, 0.2, 1.0]
             )
             p.createMultiBody(
@@ -402,21 +417,22 @@ class SpotMicroPyBulletSim:
             )
         
         # 2. Cylindrical obstacles (like pillars or trash cans)
+        # Positions spaced to ensure at least min_passage_width between obstacles
         cylinder_positions = [
-            [-1.0, -1.0, 0.4],
-            [1.5, -0.5, 0.3],
+            [-1.0, -1.2, max(0.4, min_obstacle_height)],  # Moved further
+            [1.5, -0.8, max(0.3, min_obstacle_height)],   # Moved further
         ]
         
         for pos in cylinder_positions:
             height = pos[2]
             cyl_shape = p.createCollisionShape(
                 p.GEOM_CYLINDER,
-                radius=0.15,
+                radius=cylinder_radius,
                 height=height*2
             )
             cyl_visual = p.createVisualShape(
                 p.GEOM_CYLINDER,
-                radius=0.15,
+                radius=cylinder_radius,
                 length=height*2,
                 rgbaColor=[0.5, 0.5, 0.5, 1.0]
             )
@@ -427,39 +443,54 @@ class SpotMicroPyBulletSim:
                 basePosition=[pos[0], pos[1], height]
             )
         
-        # 3. Sphere obstacles (like balls or rounded objects)
-        sphere_positions = [
-            [0.0, 1.5, 0.1],
-            [-0.5, -0.5, 0.08],
-        ]
+        # 3. Sphere obstacles (like balls or rounded objects) - REMOVED
+        # Spheres were causing confusion, replaced with taller box obstacles
+        # If you want to add sphere obstacles back, uncomment below and ensure radius >= min_obstacle_height
+        # sphere_positions = [
+        #     [0.0, 1.5, min_obstacle_height],
+        #     [-0.5, -0.5, min_obstacle_height],
+        # ]
+        # 
+        # for pos in sphere_positions:
+        #     radius = min_obstacle_height  # Ensure sphere extends above lidar height
+        #     sphere_shape = p.createCollisionShape(
+        #         p.GEOM_SPHERE,
+        #         radius=radius
+        #     )
+        #     sphere_visual = p.createVisualShape(
+        #         p.GEOM_SPHERE,
+        #         radius=radius,
+        #         rgbaColor=[0.8, 0.2, 0.2, 1.0]
+        #     )
+        #     p.createMultiBody(
+        #         baseMass=0,
+        #         baseCollisionShapeIndex=sphere_shape,
+        #         baseVisualShapeIndex=sphere_visual,
+        #         basePosition=[pos[0], pos[1], radius]  # Position at radius height
+        #     )
         
-        for pos in sphere_positions:
-            radius = pos[2]
-            sphere_shape = p.createCollisionShape(
-                p.GEOM_SPHERE,
-                radius=radius
-            )
-            sphere_visual = p.createVisualShape(
-                p.GEOM_SPHERE,
-                radius=radius,
-                rgbaColor=[0.8, 0.2, 0.2, 1.0]
-            )
-            p.createMultiBody(
-                baseMass=0,
-                baseCollisionShapeIndex=sphere_shape,
-                baseVisualShapeIndex=sphere_visual,
-                basePosition=pos
-            )
+        # 4. Create a passage (two boxes forming a corridor)
+        # Ensure passage width is at least 1.5x robot width
+        passage_box_half_x = 0.2  # Box half-extent in X direction
+        passage_box_half_y = 0.8  # Box half-extent in Y direction
+        passage_height = min_obstacle_height
         
-        # 4. Create a narrow passage (two boxes forming a corridor)
-        passage_width = 0.5  # Narrow passage for testing
+        # Calculate passage width: distance between boxes - box widths
+        # passage_width = (right_pos - left_pos) - (2 * passage_box_half_x)
+        # We want: passage_width >= min_passage_width
+        # So: (right_pos - left_pos) >= min_passage_width + 2 * passage_box_half_x
+        #     = 0.225 + 0.4 = 0.625m
+        passage_center_gap = min_passage_width + 2 * passage_box_half_x  # 0.225 + 0.4 = 0.625m
+        passage_left_x = -0.5
+        passage_right_x = passage_left_x + passage_center_gap  # -0.5 + 0.625 = 0.125
+        
         passage_box_shape = p.createCollisionShape(
             p.GEOM_BOX,
-            halfExtents=[0.2, 0.8, 0.2]
+            halfExtents=[passage_box_half_x, passage_box_half_y, passage_height]
         )
         passage_box_visual = p.createVisualShape(
             p.GEOM_BOX,
-            halfExtents=[0.2, 0.8, 0.2],
+            halfExtents=[passage_box_half_x, passage_box_half_y, passage_height],
             rgbaColor=[0.4, 0.4, 0.6, 1.0]
         )
         
@@ -468,7 +499,7 @@ class SpotMicroPyBulletSim:
             baseMass=0,
             baseCollisionShapeIndex=passage_box_shape,
             baseVisualShapeIndex=passage_box_visual,
-            basePosition=[-0.5, 0.0, 0.2]
+            basePosition=[passage_left_x, 0.0, passage_height]
         )
         
         # Right side of passage
@@ -476,8 +507,11 @@ class SpotMicroPyBulletSim:
             baseMass=0,
             baseCollisionShapeIndex=passage_box_shape,
             baseVisualShapeIndex=passage_box_visual,
-            basePosition=[0.1, 0.0, 0.2]
+            basePosition=[passage_right_x, 0.0, passage_height]
         )
+        
+        actual_passage_width = passage_center_gap - 2 * passage_box_half_x
+        rospy.loginfo(f"Passage created: width={actual_passage_width:.3f}m (min required: {min_passage_width:.3f}m)")
         
         # 5. Optional: Add a ramp for testing climbing
         ramp_length = 1.0
@@ -505,7 +539,8 @@ class SpotMicroPyBulletSim:
         
         rospy.loginfo("Test environment created successfully!")
         rospy.loginfo(f"Room size: {room_size}x{room_size}m")
-        rospy.loginfo(f"Obstacles added: {len(box_positions)} boxes, {len(cylinder_positions)} cylinders, {len(sphere_positions)} spheres")
+        rospy.loginfo(f"Obstacles added: {len(box_positions)} boxes, {len(cylinder_positions)} cylinders")
+        rospy.loginfo(f"Minimum obstacle height: {min_obstacle_height}m (above lidar height ~0.24m)")
     
     def _get_lidar_link_index(self):
         """Get the link index for lidar_link in PyBullet"""

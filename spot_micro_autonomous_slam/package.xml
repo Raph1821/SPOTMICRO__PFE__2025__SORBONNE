@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>spot_micro_autonomous_slam</name>
+  <version>0.1.0</version>
+  <description>Autonomous SLAM and frontier exploration package for Spot Micro robot</description>
+  
+  <!-- Author information -->
+  <maintainer email="user@example.com">Spot Micro Developer</maintainer>
+  <license>Apache License 2.0</license>
+  
+  <!-- Dependencies -->
+  <buildtool_depend>catkin</buildtool_depend>
+  
+  <!-- Build dependencies -->
+  <build_depend>rospy</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>nav_msgs</build_depend>
+  <!-- frontier_exploration is optional - only needed for frontier_exploration_client.py -->
+  <!-- <build_depend>frontier_exploration</build_depend> -->
+  <build_depend>actionlib</build_depend>
+  <build_depend>actionlib_msgs</build_depend>
+  <build_depend>tf2</build_depend>
+  <build_depend>tf2_ros</build_depend>
+  <build_depend>costmap_2d</build_depend>
+  
+  <!-- Runtime dependencies -->
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>move_base</exec_depend>
+  <!-- frontier_exploration is optional - only needed for frontier_exploration_client.py -->
+  <!-- <exec_depend>frontier_exploration</exec_depend> -->
+  <exec_depend>actionlib</exec_depend>
+  <exec_depend>actionlib_msgs</exec_depend>
+  <exec_depend>tf2</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>costmap_2d</exec_depend>
+  <exec_depend>clear_costmap_recovery</exec_depend>
+  <exec_depend>rotate_recovery</exec_depend>
+  <exec_depend>map_server</exec_depend>
+  
+  <!-- Other tags -->
+  <author email="user@example.com">Spot Micro Developer</author>
+  
+</package>

@@ -1,0 +1,47 @@
+# Move Base main parameters
+# Top-level navigation stack configuration
+
+# Controller configuration
+base_local_planner: base_local_planner/TrajectoryPlannerROS
+base_global_planner: navfn/NavfnROS
+
+# Planning frequency
+planner_frequency: 1.0
+controller_frequency: 5.0
+
+# Path computation
+planner_patience: 15.0
+controller_patience: 15.0
+
+# Recovery behaviors - what to do if stuck
+recovery_behaviors:
+  - {name: conservative_reset, type: clear_costmap_recovery/ClearCostmapRecovery}
+  - {name: rotate_recovery, type: rotate_recovery/RotateRecovery}
+
+conservative_reset:
+  reset_distance: 3.0
+
+rotate_recovery:
+  sim_granularity: 0.017
+  frequency: 20.0
+
+# Clearing parameters
+clearing_rotation_allowed: true
+
+# Shutdown params
+shutdown_costmaps: false
+
+# Monitoring
+oscillation_timeout: 30.0
+oscillation_distance: 0.5
+
+# Global planner
+NavfnROS:
+  allow_unknown: true  # Allow planning through unknown space
+  visualize_potential: false
+  planner_window_x: 0.0
+  planner_window_y: 0.0
+  default_tolerance: 0.0
+  # Try to find path even if goal is in unknown space
+  # This is important for frontier exploration where goals are often at map edges
+

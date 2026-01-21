@@ -274,12 +274,14 @@ smk::Point SpotMicroWalkState::swingLegController(
   Vector3f new_foot_pos_vec;
 
   // Create delta position vector for touchdown location
-  // For lateral movement (y_speed), ensure consistent scaling with stance controller
-  // stance moves -y_speed*dt per step over stance_ticks steps = -y_speed*stance_ticks*dt total
-  // swing touchdown should offset by the same total amount (without alpha for y_speed to match stance)
+  // For y_speed: use same sign convention as x_speed (positive) for touchdown offset
+  // This ensures touchdown position is offset in the direction of movement
+  // Left/right legs have opposite z coordinates, but same delta_z works correctly:
+  // - Right legs (z > 0): z increases when moving right, decreases when moving left
+  // - Left legs (z < 0): z becomes less negative when moving right, more negative when moving left
   Vector3f delta_pos(alpha * stance_ticks * dt * cmd.getXSpeedCmd(),
                      0.0f, 
-                     -stance_ticks * dt * cmd.getYSpeedCmd());
+                     alpha * stance_ticks * dt * cmd.getYSpeedCmd());
 
   // Create rotation matrix for yaw rate
   float theta = beta * stance_ticks * dt * -cmd.getYawRateCmd();
