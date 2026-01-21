@@ -1,0 +1,18 @@
+<launch>
+  <!-- Launch Spot Micro with IMU support -->
+  
+  <!-- I2C PWM Board for servo control -->
+  <node name="i2cpwm_board_node" pkg="i2cpwm_board" type="i2cpwm_board" output="screen" />
+  
+  <!-- MPU6050 IMU Sensor -->
+  <include file="$(find mpu6050_imu)/launch/mpu6050.launch" />
+  
+  <!-- Motion Control Node -->
+  <include file="$(find spot_micro_motion_cmd)/launch/motion_cmd.launch">
+    <arg name="run_standalone" value="false" />
+  </include>
+  
+  <!-- Keyboard Control (Optional) -->
+  <!-- <include file="$(find spot_micro_keyboard_command)/launch/keyboard_command.launch" /> -->
+  
+</launch>
