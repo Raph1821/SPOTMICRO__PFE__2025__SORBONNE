@@ -3,7 +3,6 @@
   <!-- Arguments -->
   <arg name="use_gui" default="true" />
   <arg name="rviz" default="false" />
-  <arg name="obstacles" default="true" />  <!-- Enable test obstacles for lidar -->
   
   <!-- Load robot description -->
   <param name="robot_description" 
@@ -13,14 +12,6 @@
   <node name="pybullet_sim" pkg="spot_micro_pybullet" type="spot_micro_pybullet_sim.py" output="screen">
     <param name="use_gui" value="$(arg use_gui)" />
     <param name="rate" value="50" />
-    <!-- Lidar parameters -->
-    <param name="lidar_enabled" value="true" />
-    <param name="lidar_rate" value="10" />  <!-- Hz, typical for RPLidar A1 -->
-    <param name="lidar_samples" value="360" />  <!-- 360 degrees -->
-    <param name="lidar_min_range" value="0.15" />  <!-- meters -->
-    <param name="lidar_max_range" value="12.0" />  <!-- meters -->
-    <!-- Obstacle parameters -->
-    <param name="enable_obstacles" value="$(arg obstacles)" />  <!-- Enable test obstacles -->
   </node>
 
   <!-- Publish robot state to TF -->
