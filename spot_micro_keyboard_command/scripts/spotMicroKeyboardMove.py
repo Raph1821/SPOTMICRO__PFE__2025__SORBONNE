@@ -29,11 +29,11 @@ Keyboard commands for body motion
 
   u: Quit body motion command mode and go back to rest mode
   w: Increment forward speed command / decrease pitch angle
-  a: Increment left strafe speed command (move left) / left roll angle
+  a: Increment left speed command / left roll angle
   s: Increment backward speed command / increase pitch angle
-  d: Increment right strafe speed command (move right) / right roll angle
-  q: Increment left yaw rate command (turn left) / left yaw angle (negative left, positive right) 
-  e: Increment right yaw rate command (turn right) / right yaw angle (negative left, positive right) 
+  d: Increment right speed command / right roll angle
+  q: Increment body yaw rate command / left yaw angle (negative left, positive right) 
+  e: Increment body yaw rate command / right yaw angle (negative left, positive right) 
   f: In walk mode, zero out all rate commands.
 
   anything else : Prompt again for command
@@ -229,22 +229,18 @@ class SpotMicroKeyboardControl():
                                 self._ros_pub_vel_cmd.publish(self._vel_cmd_msg)
 
                             elif userInput == 'a':
-                                # A key: Move left (negative y speed)
                                 self._vel_cmd_msg.linear.y = self._vel_cmd_msg.linear.y - speed_inc
                                 self._ros_pub_vel_cmd.publish(self._vel_cmd_msg)
                             
                             elif userInput == 'd':
-                                # D key: Move right (positive y speed)
                                 self._vel_cmd_msg.linear.y = self._vel_cmd_msg.linear.y + speed_inc
                                 self._ros_pub_vel_cmd.publish(self._vel_cmd_msg)
 
                             elif userInput == 'q':
-                                # Q key: Turn left (negative yaw rate)
                                 self._vel_cmd_msg.angular.z = self._vel_cmd_msg.angular.z - yaw_rate_inc
                                 self._ros_pub_vel_cmd.publish(self._vel_cmd_msg)
 
                             elif userInput == 'e':
-                                # E key: Turn right (positive yaw rate)
                                 self._vel_cmd_msg.angular.z = self._vel_cmd_msg.angular.z + yaw_rate_inc
                                 self._ros_pub_vel_cmd.publish(self._vel_cmd_msg)
 

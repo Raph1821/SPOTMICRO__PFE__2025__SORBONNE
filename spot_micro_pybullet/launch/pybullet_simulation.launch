@@ -2,20 +2,13 @@
   
   <!-- Arguments -->
   <arg name="use_gui" default="true" />
-  <arg name="rviz" default="true" />
+  <arg name="rviz" default="false" />
   <arg name="obstacles" default="true" />  <!-- Enable test obstacles for lidar -->
-  <arg name="slam" default="true" />  <!-- Enable SLAM -->
+  <arg name="slam" default="false" />  <!-- Enable SLAM -->
   
-  <!-- Load robot description (use PyBullet URDF) -->
+  <!-- Load robot description -->
   <param name="robot_description" 
          command="$(find xacro)/xacro $(find spot_micro_pybullet)/urdf/spot_micro_pybullet_gen_ros.urdf" /> 
-
-  <!-- Start motion command node to publish TF transforms (base_footprint, odom, etc.) -->
-  <!-- This is required for SLAM to work properly -->
-  <include file="$(find spot_micro_motion_cmd)/launch/motion_cmd.launch">
-    <arg name="run_standalone" value="true" />
-    <arg name="debug_mode" value="false" />
-  </include>
 
   <!-- Start PyBullet simulation -->
   <node name="pybullet_sim" pkg="spot_micro_pybullet" type="spot_micro_pybullet_sim.py" output="screen">
@@ -30,6 +23,13 @@
     <!-- Obstacle parameters -->
     <param name="enable_obstacles" value="$(arg obstacles)" />  <!-- Enable test obstacles -->
   </node>
+
+  <!-- Start motion command node to publish TF transforms (base_footprint, odom, etc.) -->
+  <!-- Required for SLAM and proper TF tree -->
+  <include file="$(find spot_micro_motion_cmd)/launch/motion_cmd.launch">
+    <arg name="run_standalone" value="true" />
+    <arg name="debug_mode" value="false" />
+  </include>
 
   <!-- Publish robot state to TF -->
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
