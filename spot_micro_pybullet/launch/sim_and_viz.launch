@@ -6,9 +6,9 @@
   
   <!-- Load robot description -->
   <param name="robot_description" 
-         command="$(find xacro)/xacro $(find spot_micro_pybullet)/urdf/spot_micro_pybullet_gen_ros.urdf" />
+         command="$(find xacro)/xacro $(find spot_micro_pybullet)/urdf/spot_micro_pybullet.urdf.xacro" />
 
-  <!-- Start PyBullet simulation -->
+  <!-- Start PyBullet simulation (subscribes to /servos_absolute) -->
   <node name="pybullet_sim" pkg="spot_micro_pybullet" type="spot_micro_pybullet_sim.py" output="screen">
     <param name="use_gui" value="$(arg use_gui)" />
     <param name="rate" value="50" />
@@ -19,6 +19,6 @@
 
   <!-- Launch RViz for visualization -->
   <node if="$(arg rviz)" name="rviz" pkg="rviz" type="rviz" 
-        args="-d $(find spot_micro_rviz)/rviz/default.rviz" />
+        args="-d $(find spot_micro_rviz)/rviz/urdf.rviz" />
 
 </launch>
