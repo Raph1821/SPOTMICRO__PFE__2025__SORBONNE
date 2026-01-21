@@ -51,17 +51,198 @@ Complete installation guide for Spot Micro Quadruped Robot on Raspberry Pi 4B 8G
 
 ### Step 1: Install Ubuntu 20.04 on Raspberry Pi
 
+**Attention :**
+- If you work with the simulation, pass this step
+- For the first 2 sections of this step, If your SD card is already wrote by Raspberry Pi Imager, you can pass these sections
+
 1. **Download Ubuntu 20.04 Server (64-bit) for Raspberry Pi:**
-   - Download from: https://ubuntu.com/download/raspberry-pi
-   - Choose: Ubuntu Server 20.04.X LTS (64-bit)
+   - From: https://cdimage.ubuntu.com/releases/20.04/release/
+   - Search & Download File : `ubuntu-20.04.5-preinstalled-server-arm64+raspi.img.xz`
 
 2. **Flash the image to microSD card:**
-   ```bash
-   # Using Raspberry Pi Imager (recommended)
-   # Or use dd command on Linux:
-   sudo dd if=ubuntu-20.04-preinstalled-server-arm64+raspi.img of=/dev/sdX bs=4M status=progress
-   sync
-   ```
+   - Download Raspberry Pi Imager on your computer 
+   - From : https://www.raspberrypi.com/documentation/computers/getting-started.html#installing-the-operating-system
+   - Search & follow the instructions from `Install an operating system` 
+   - Attention !!! In `OS` → Use custom (at the bottom of the list) → Select the installed file .img.xz
+   - After choosing the file, the `Customization` won't be accessible like the options that are supported by Raspberry Pi Imager (because Ubuntu 20.04 is an old version compared to the new one Debian)
+   - You can directly write the SD Card 
+   - If it take a lot of time to write (more than 30min) → `Cancel Write` → Install `SD Card Formatter`→ Choose `Quick Format` → `Format` → Then rewrite the card (Anyways if you have a good card reader or sometime you need to restart your PC to run it faster !)
+   
+3. **After writing Raspberry Pi Imager on the SD Card**
+
+   - Open it in your PC → You will see :
+
+      ```bash
+      system-boot(E:)/ (it could be (D:/H:/...))
+      ├─ ...
+      ├─ network-config
+      ├─ ...
+      ├─ user-data
+      ├─ ... 
+      ```
+   - Open `network-config`, comment some lines and modify as below :
+      ```bash
+      #wifis:
+      #  wlan0:
+      #    dhcp4: true
+      #    optional: true
+      #    access-points:
+      #      myhomewifi:
+      #        password: "S3kr1t"
+      #      myworkwifi:
+      #        password: "correct battery horse staple"
+      #      workssid:
+      #        auth:
+      #          key-management: eap
+      #          method: peap
+      #          identity: "me@example.com"
+      #          password: "passw0rd"
+      #          ca-certificate: /etc/my_ca.pem
+      wifis:
+         wlan0:
+            wlan0:
+            dhcp4: true
+            optional: true
+            access-points:
+               "Your Wifi Priority":
+               password: "pass1"
+               "Your Second Wifi":
+               password: "pass2"
+               "Another wifi":
+               password: "pass3"
+      ```
+      So when you activate the Raspberry Pi, it will try to connect to your first wifi. If it's inaccessible, it will find the second one. 
+   - Open `user-data`, decomment and modify as below :
+
+      ```bash
+      #cloud-config
+
+      #chpasswd:
+      #  expire: true
+      #  list:
+      #  - ubuntu:ubuntu
+
+      hostname: vers_number
+
+      # Set locale to French
+      locale: fr_FR.UTF-8
+
+      # Set timezone to Paris
+      timezone: Europe/Paris
+
+      ## Set up the keyboard layout. See localectl(1), in particular the various
+      ## list-x11-* sub-commands, to determine the available models, layouts,
+      ## variants, and options
+      keyboard:
+      model: pc105
+      layout: fr
+      variant: ''
+
+      ssh_pwauth: true
+
+      users:
+      - name: spotmicro
+         sudo: ALL=(ALL) NOPASSWD:ALL
+         groups: users, admin
+         shell: /bin/bash
+         lock_passwd: false
+         passwd: $6$YOUR_HASHED_PASSWORD
+
+      package_update: true
+      package_upgrade: true
+
+      packages:
+      - avahi-daemon
+      - python3-pip
+      - python3-venv
+      - tigervnc-standalone-server
+      - tigervnc-common
+      - i2c-tools
+      - python3-smbus
+
+      write_files:
+      #- path: /etc/default/console-setup
+      #  content: |
+      #    # Consult the console-setup(5) manual page.
+      #    ACTIVE_CONSOLES="/dev/tty[1-6]"
+      #    CHARMAP="UTF-8"
+      #    VIDEOMODE=
+      #    FONT="Lat15-Terminus18x10.psf.gz"
+      #    FONTFACE=
+      #    FONTSIZE=
+      #    CODESET="Lat15"
+      #  permissions: '0644'
+      #  owner: root:root
+      #- encoding: gzip
+      #  path: /root/Makefile
+      #  content: !!binary |
+      #    H4sICF2DTWIAA01ha2VmaWxlAFNWCM8syVBILMjPyU/PTC1WKMlXiPB2dlFQNjSx5MpNteLi
+      #    dLDiSoRQxYl5KeWZyRkgXrSCkoqKRmaKgm6pppKCbmqhgoFCrIKamkK1QmpyRr6Ckn92YqWS
+      #    NdC80uQMBZhOa4VahZoaqIrwjMQSewXfxOxUhcwShcr80qLi1Jw0RSUuAIYfEJmVAAAA
+      #  owner: root:root
+      #  permissions: '0644'
+      - path: /etc/systemd/system/vncserver@.service
+      content: |
+         [Unit]
+         Description=Remote desktop service (VNC)
+         After=syslog.target network.target
+         
+         [Service]
+         Type=forking
+         User=spotmicro
+         Group=spotmicro
+         WorkingDirectory=/home/spotmicro
+         
+         ExecStartPre=/bin/sh -c '/usr/bin/vncserver -kill :%i > /dev/null 2>&1 || :'
+         ExecStart=/usr/bin/vncserver :%i -geometry 1920x1080 -depth 24 -localhost no
+         ExecStop=/usr/bin/vncserver -kill :%i
+         
+         [Install]
+         WantedBy=multi-user.target
+      permissions: '0644'
+      owner: root:root
+
+      ## Run arbitrary commands at rc.local like time
+      runcmd:
+      #- [ ls, -l, / ]
+      #- [ sh, -xc, "echo $(date) ': hello world!'" ]
+      #- [ wget, "http://ubuntu.com", -O, /run/mydir/index.html ]
+      - usermod -aG i2c spotmicro
+      - i2cdetect -y 1 || true
+      - mkdir -p /home/spotmicro/.vnc
+      - chown spotmicro:spotmicro /home/spotmicro/.vnc
+      - sudo -u spotmicro bash -c 'echo "spotmicro" | vncpasswd -f > /home/spotmicro/.vnc/passwd'
+      - chmod 600 /home/spotmicro/.vnc/passwd
+      - chown spotmicro:spotmicro /home/spotmicro/.vnc/passwd
+      - systemctl daemon-reload
+      - systemctl enable vncserver@1.service
+      - systemctl start vncserver@1.service
+         ```
+      The hashed password must be created by :
+         ```bash
+         openssl passwd -6
+         ```
+      Type your your password, it will give you a specific line of code then you copy it and paste it in this section :
+         ```bash
+         passwd: $6$YOUR_HASHED_PASSWORD
+         ```
+4. **Connect to the Raspberry Pi Card (After inserting the card in the RPi):**
+   
+   Activate it with a USB-C cable. There are 2 ways to connect to the card:
+   
+   **Method 1: Using hostname**
+      ```bash
+      ping hostname.local  # vers_number.local
+      ssh spotmicro@hostname.local 
+      ```
+   
+   **Method 2: Using IP address**
+      ```bash
+      arp -a # To find the dynamic IP address
+      ping 192.168.X.X # Your Raspberry Pi IP address
+      ssh spotmicro@192.168.X.X 
+      ```
+
 
 3. **Boot Raspberry Pi and complete initial setup:**
    ```bash
