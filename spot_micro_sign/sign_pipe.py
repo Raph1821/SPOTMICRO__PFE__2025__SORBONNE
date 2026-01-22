@@ -7,8 +7,15 @@ while cap.isOpened():
     if command == "stand":
         print("Hand sign detected: STAND")
 
-    elif command == ("idle"):
+    elif command == "idle":
         print("Hand sign detected: IDLE")
+
+
+    elif command == "walk":
+        print("Hand sign detected: WALK")
+
+    else:
+        print("NO sign detected")
 
     if frame is not None:
         cv2.imshow('Hand Sign Detection', frame)

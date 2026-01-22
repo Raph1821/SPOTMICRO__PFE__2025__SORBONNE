@@ -65,6 +65,29 @@ def is_love_hand(landmarks):
     # ASL "I Love You" = thumb + index + pinky extended, middle + ring folded
     return thumb and index and pinky and not middle and not ring
 
+def is_ok_hand(landmarks):
+    # Distance between thumb tip (4) and index tip (8)
+    thumb_tip = landmarks[4]
+    index_tip = landmarks[8]
+
+    # thumb and index close to form cercle
+    dist = ((thumb_tip.x - index_tip.x)**2 + (thumb_tip.y - index_tip.y)**2) ** 0.5
+    circle_close = dist < 0.10 #0.05
+
+    # Middle, ring, pinky extended
+    def ext(tip, pip):
+        return landmarks[tip].y < landmarks[pip].y
+
+    middle = ext(12, 10)
+    ring   = ext(16, 14)
+    pinky  = ext(20, 18)
+
+    # Index should be bent (tip below pip)
+    index_bent = landmarks[8].y > landmarks[6].y
+
+    return circle_close and middle and ring and pinky and index_bent
+
+
 
 def get_sign_command():
     ret, frame_flipped = cap.read()
@@ -89,13 +112,17 @@ def get_sign_command():
     if is_open_hand(landmarks):
         return "stand", frame
 
-    # Detect open hand → STAND
+    # Detect love hand → idle
     if is_love_hand(landmarks):
         return "idle", frame
 
+    # Detect ok hand → walk
+    if is_ok_hand(landmarks):
+        return "walk", frame
+
     return None, frame
 
-
+# debug
 ''' MAIN
 # Main loop to continuously detect hand signs
 while cap.isOpened():
