@@ -5,12 +5,26 @@ from sign_detector import get_sign_command, cap
 
 ###################
 # SOCKET SENDER
-ROBOT_IP = "192.168.1.42"   # <- CHANGE  with robot/WSL IP
-PORT = 5005
+ROBOT_IP = "172.26.52.254"   # <- CHANGE  with robot/WSL IP
+PORT = 5005 # sends at port 5005 here
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-def send_to_robot(msg: str):
+def send_to_robot(command: str):
+    if command == "stand":
+        msg = "STAND"
+        print(msg, " sent")
+
+    elif command == "idle":
+        msg = "IDLE"
+
+    elif command == "walk":
+        msg = "WALK"
+
+    else:
+        print("Unknown command:", command)
+        return
+
     sock.sendto(msg.encode(), (ROBOT_IP, PORT))
     print(f"[SENT] {msg} → {ROBOT_IP}:{PORT}")
 
@@ -26,7 +40,7 @@ accumulators = {
 }
 
 # Parameters
-THRESHOLD = 15 #5          # frames needed to fire
+THRESHOLD = 18 #5          # frames needed to fire
 DECAY = 1              # decay per frame
 COOLDOWN_TIME = 2    # seconds of refractory period
 
@@ -82,7 +96,9 @@ if __name__ == "__main__":
     while cap.isOpened():
         command, frame = fire_sign_command()
         if command :
+            send_to_robot(command)
             time.sleep(2) # cooldown not obligatory
+            command = None
 
         # still works but now it will say "no Sign detected" if no fire
         """

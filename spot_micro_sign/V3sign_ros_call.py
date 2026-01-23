@@ -14,7 +14,7 @@ def main():
 
     # --- UDP Receiver ---
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind(("0.0.0.0", 5005))
+    sock.bind(("0.0.0.0", 5005)) # Listens at port 5005 here
 
     while not rospy.is_shutdown():
         data, addr = sock.recvfrom(1024)
