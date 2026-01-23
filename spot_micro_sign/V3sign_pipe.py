@@ -1,6 +1,19 @@
 import time
 import cv2
+import socket
 from sign_detector import get_sign_command, cap
+
+###################
+# SOCKET SENDER
+ROBOT_IP = "192.168.1.42"   # <- CHANGE  with robot/WSL IP
+PORT = 5005
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+def send_to_robot(msg: str):
+    sock.sendto(msg.encode(), (ROBOT_IP, PORT))
+    print(f"[SENT] {msg} → {ROBOT_IP}:{PORT}")
+
 
 ####################
 # BIOINSPIRED SAMPLER WRAPPER FOR sign_detector
