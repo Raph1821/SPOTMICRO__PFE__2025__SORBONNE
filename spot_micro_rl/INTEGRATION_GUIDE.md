@@ -666,8 +666,8 @@ df.plot(x='Episode', y='EvalReward')
 ```bash
 # Entraîner les 3 algorithmes
 python scripts/spot_rl_train_ars.py --num_episodes 10000   # ARS
-python scripts/spot_rl_train_sac.py --episodes 10000       # SAC
-python scripts/spot_rl_train_td3.py --episodes 10000       # TD3
+python scripts/spot_rl_train_sac_parallel.py --max_episodes 10000       # SAC
+python scripts/spot_rl_train_td3_parallel.py --max_episodes 10000       # TD3
 
 # Comparer performances
 python scripts/gmbc_data.py  # Analyse survival data
