@@ -28,7 +28,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 from spot_micro_rl.spot_env import SpotMicroEnv
 from spot_micro_rl.sac import SACAgent
 from spot_micro_rl.spot_env_randomizer import SpotEnvRandomizer
-from spot_micro_rl.motor_model import MotorModel
+from spot_micro_rl.motor import MotorModel
 
 
 def evaluate_policy(env, agent, eval_episodes=5):
