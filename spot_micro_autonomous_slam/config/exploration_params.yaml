@@ -1,0 +1,90 @@
+# Spot Micro Autonomous Exploration and Path Planning Configuration
+
+# ============================================
+# Global Robot Parameters
+# ============================================
+robot:
+  # Velocity limits
+  max_forward_speed: 0.15      # m/s - Maximum forward velocity
+  max_turn_speed: 0.3          # rad/s - Maximum angular velocity
+  
+  # Safety distances
+  obstacle_distance: 0.4       # meters - Minimum distance to obstacles (trigger turn)
+  safe_distance: 0.5           # meters - Additional safety margin
+  
+  # Exploration behavior
+  turn_angle: 1.57             # radians (90 degrees) - Default turn angle
+
+# ============================================
+# Exploration Mode (simple_explorer.py)
+# ============================================
+exploration:
+  enabled: true                # Start in exploration mode
+  
+  # Laser scan parameters
+  front_scan_angle: 0.52       # radians (~30 degrees on each side)
+  
+  # Obstacle detection
+  obstacle_distance: 0.4       # meters
+  safe_distance: 0.5           # meters
+  
+  # Movement control
+  max_forward_speed: 0.15      # m/s
+  max_turn_speed: 0.3          # rad/s
+  
+  # Stuck detection
+  stuck_threshold: 0.05        # meters - Movement threshold to detect stuck
+  stuck_time: 5.0              # seconds - Time before considering robot stuck
+  max_consecutive_turns: 3     # Maximum consecutive turns before escalating
+  
+  # Turn recovery
+  turn_angle: 1.57             # radians (90 degrees)
+  escalated_turn_angle: 2.36   # radians (135 degrees)
+  full_turn_angle: 3.14        # radians (180 degrees)
+  
+  # Loop rate
+  rate: 10                     # Hz
+
+# ============================================
+# Path Planning Mode (path_planner.py)
+# ============================================
+path_planning:
+  # Goal parameters
+  goal_tolerance: 0.3          # meters - Distance tolerance for goal reached
+  
+  # Navigation
+  max_forward_speed: 0.15      # m/s
+  max_turn_speed: 0.3          # rad/s
+  
+  # Manual navigation (fallback if move_base unavailable)
+  pid_angle_gain: 0.5          # Proportional gain for angle correction
+  reduced_speed_factor: 0.5    # Speed reduction when turning (50% of max)
+  
+  # Loop rate
+  rate: 10                     # Hz
+  
+  # Move base
+  move_base_timeout: 10.0      # seconds - Timeout for move_base connection
+
+# ============================================
+# Move Base Navigation Stack
+# ============================================
+move_base:
+  # Costmap parameters
+  costmap_resolution: 0.05     # meters
+  
+  # Planner
+  planner_frequency: 1.0       # Hz
+  controller_frequency: 5.0    # Hz
+  
+  # Tolerance
+  xy_goal_tolerance: 0.3       # meters
+  yaw_goal_tolerance: 0.1      # radians
+
+# ============================================
+# Simulation (PyBullet)
+# ============================================
+simulation:
+  use_gui: true                # Show PyBullet GUI
+  physics_speed: 1.0           # Speed multiplier for physics simulation
+  timestep: 0.001              # seconds

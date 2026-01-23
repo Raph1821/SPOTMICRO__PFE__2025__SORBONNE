@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Move Base Navigation Stack Launch File
+         
+         Configures and launches the complete ROS navigation stack for autonomous navigation.
+         This includes:
+         - move_base node (navigation server)
+         - Local and global costmaps
+         - Path planners (global: navfn, local: DWA)
+         - Recovery behaviors (costmap clearing, rotation)
+    -->
+    
+    <!-- Arguments -->
+    <arg name="model" default="spot_micro"/>
+    
+    <!-- Get robot description from spot_micro_pybullet -->
+    <param name="robot_description" 
+           command="$(find xacro)/xacro $(find spot_micro_pybullet)/urdf/spot_micro_pybullet.urdf.xacro"/>
+    
+    <!-- TF Static Transforms -->
+    <!-- Robot base_link to base_footprint transform -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_broadcaster"
+          args="0 0 0 0 0 0 1 base_link base_footprint"/>
+    
+    <!-- ====== Move Base Node ====== -->
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+        
+        <!-- ====== Costmap Configuration ====== -->
+        <!-- Common parameters for all costmaps -->
+        <rosparam file="$(find spot_micro_autonomous_slam)/config/costmap_common_params.yaml" command="load" ns="global_costmap"/>
+        <rosparam file="$(find spot_micro_autonomous_slam)/config/costmap_common_params.yaml" command="load" ns="local_costmap"/>
+        
+        <!-- Local costmap parameters -->
+        <rosparam file="$(find spot_micro_autonomous_slam)/config/local_costmap_params.yaml" command="load" ns="local_costmap"/>
+        
+        <!-- Global costmap parameters -->
+        <rosparam file="$(find spot_micro_autonomous_slam)/config/global_costmap_params.yaml" command="load" ns="global_costmap"/>
+        
+        <!-- ====== Planner Configuration ====== -->
+        <!-- Move base parameters -->
+        <rosparam file="$(find spot_micro_autonomous_slam)/config/move_base_params.yaml" command="load"/>
+        
+        <!-- Base local planner (DWA) parameters -->
+        <rosparam file="$(find spot_micro_autonomous_slam)/config/base_local_planner_params.yaml" command="load" ns="TrajectoryPlannerROS"/>
+        
+        <!-- Costmap clearing recovery -->
+        <param name="conservative_reset/reset_distance" value="3.0"/>
+        
+        <!-- ====== Frame Parameters ====== -->
+        <param name="global_frame" value="map"/>
+        <param name="odom_frame" value="odom"/>
+        <param name="base_frame" value="base_footprint"/>
+        
+        <!-- ====== Planner and Controller ====== -->
+        <param name="base_global_planner" value="navfn/NavfnROS"/>
+        <param name="base_local_planner" value="base_local_planner/TrajectoryPlannerROS"/>
+        
+        <!-- ====== Frequency Settings ====== -->
+        <param name="planner_frequency" value="1.0"/>
+        <param name="controller_frequency" value="5.0"/>
+        <param name="planner_patience" value="15.0"/>
+        <param name="controller_patience" value="15.0"/>
+        
+        <!-- ====== Recovery Behaviors ====== -->
+        <param name="recovery_behavior_enabled" value="true"/>
+        <param name="clearing_rotation_allowed" value="true"/>
+        
+        <!-- ====== Publishers/Subscribers ====== -->
+        <!-- Velocity output -->
+        <remap from="cmd_vel" to="/cmd_vel"/>
+        
+        <!-- Odometry input -->
+        <remap from="odom" to="/odom"/>
+        
+    </node>
+    
+    <!-- ====== Visualization Markers (Optional) ====== -->
+    <!-- Plan and costmap visualization for debugging -->
+    <param name="move_base/TrajectoryPlannerROS/visualize_potential" value="false"/>
+    
+</launch>

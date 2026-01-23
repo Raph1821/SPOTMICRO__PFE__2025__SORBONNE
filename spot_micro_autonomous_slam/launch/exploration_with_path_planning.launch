@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <!-- Path Planning with Autonomous Exploration Launch File
+    
+         This launch file starts exploration with path planning capabilities:
+         1. Autonomous exploration using simple_explorer.py
+         2. Manual path planning with RVIZ goal clicking
+         3. Seamless mode switching between exploration and path planning
+         4. Simulation and visualization support
+         
+         Arguments:
+         - use_simulation: Use PyBullet simulation (default: true)
+         - rviz: Launch RViz visualization (default: true)
+         - exploration_enabled: Start in exploration mode (default: true)
+         - rviz_config: RViz configuration file
+    -->
+    
+    <!-- Arguments -->
+    <arg name="use_simulation" default="true" doc="Use PyBullet simulation"/>
+    <arg name="rviz" default="true" doc="Launch RViz visualization"/>
+    <arg name="exploration_enabled" default="true" doc="Start in exploration mode"/>
+    <arg name="rviz_config" default="$(find spot_micro_rviz)/rviz/spot_micro_slam.rviz" doc="RViz config file"/>
+    
+    <!-- Load common parameters from YAML -->
+    <rosparam command="load" file="$(find spot_micro_autonomous_slam)/config/exploration_params.yaml"/>
+    
+    <!-- ====== PyBullet Simulation (Optional) ====== -->
+    <group if="$(arg use_simulation)">
+        <include file="$(find spot_micro_pybullet)/launch/pybullet_simulation.launch">
+            <arg name="use_gui" value="true"/>
+            <arg name="rviz" value="false"/>  <!-- We launch rviz separately below -->
+            <arg name="slam" value="true"/>
+            <arg name="obstacles" value="true"/>
+        </include>
+    </group>
+    
+    <!-- ====== Real Robot (Default) ====== -->
+    <group unless="$(arg use_simulation)">
+        <!-- SLAM Mapping with Motion Control and Lidar (Hector SLAM) -->
+        <include file="$(find spot_micro_launch)/launch/motion_control_and_hector_slam.launch">
+            <arg name="run_post_proc" value="false"/>
+        </include>
+    </group>
+    
+    <!-- ====== Navigation Stack (Move Base) ====== -->
+    <include file="$(find spot_micro_autonomous_slam)/launch/move_base.launch"/>
+    
+    <!-- ====== Simple Explorer Node (Autonomous Exploration) ====== -->
+    <node pkg="spot_micro_autonomous_slam" type="simple_explorer.py" name="simple_explorer" output="screen">
+        <param name="enabled" value="$(arg exploration_enabled)"/>
+        <param name="max_forward_speed" value="0.15"/>
+        <param name="max_turn_speed" value="0.3"/>
+        <param name="obstacle_distance" value="0.4"/>
+        <param name="safe_distance" value="0.5"/>
+        <param name="turn_angle" value="1.57"/>  <!-- 90 degrees in radians -->
+    </node>
+    
+    <!-- ====== Path Planner Node (Manual Goal Navigation) ====== -->
+    <!-- Launch with delay to ensure move_base is ready -->
+    <node pkg="spot_micro_autonomous_slam" type="path_planner.py" name="path_planner" output="screen" launch-prefix="bash -c 'sleep 3 &amp;&amp; exec &#34;$@&#34;' _">
+        <param name="exploration_enabled" value="$(arg exploration_enabled)"/>
+    </node>
+    
+    <!-- ====== RViz Visualization ====== -->
+    <group if="$(arg rviz)">
+        <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rviz_config)" output="screen"/>
+    </group>
+    
+</launch>
