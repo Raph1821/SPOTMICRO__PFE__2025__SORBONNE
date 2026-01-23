@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from smbus import SMBus
+from smbus2 import SMBus
 import time
 
 MODE1 = 0x00
