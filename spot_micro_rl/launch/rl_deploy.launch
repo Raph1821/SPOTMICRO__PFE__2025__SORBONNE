@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- RL Deployment Launch File -->
+  
+  <!-- Arguments -->
+  <arg name="model_path" doc="Path to trained model file (.pkl)"/>
+  <arg name="control_freq" default="50" doc="Control frequency in Hz"/>
+  
+  <!-- Deployment node -->
+  <node name="spot_rl_controller" pkg="spot_micro_rl" type="spot_rl_deploy.py" output="screen" args="$(arg model_path)">
+    <param name="control_freq" value="$(arg control_freq)"/>
+  </node>
+  
+  <!-- You may want to include other necessary nodes here, such as: -->
+  <!-- - Joint state publisher -->
+  <!-- - IMU driver -->
+  <!-- - Servo controller -->
+  
+</launch>

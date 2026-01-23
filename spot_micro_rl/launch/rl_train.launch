@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- RL Training Launch File -->
+  
+  <!-- Arguments -->
+  <arg name="render" default="false" doc="Render PyBullet simulation"/>
+  <arg name="use_ros" default="false" doc="Use ROS topics during training"/>
+  <arg name="num_epochs" default="150" doc="Number of training epochs"/>
+  <arg name="num_deltas" default="16" doc="Number of policy deltas"/>
+  <arg name="step_size" default="0.02" doc="Policy update step size"/>
+  <arg name="save_dir" default="" doc="Directory to save models"/>
+  
+  <!-- Training node -->
+  <node name="spot_rl_train" pkg="spot_micro_rl" type="spot_rl_train.py" output="screen">
+    <param name="render" value="$(arg render)"/>
+    <param name="use_ros" value="$(arg use_ros)"/>
+    <param name="num_epochs" value="$(arg num_epochs)"/>
+    <param name="num_deltas" value="$(arg num_deltas)"/>
+    <param name="step_size" value="$(arg step_size)"/>
+    <param name="save_dir" value="$(arg save_dir)" if="$(eval save_dir != '')"/>
+  </node>
+  
+</launch>

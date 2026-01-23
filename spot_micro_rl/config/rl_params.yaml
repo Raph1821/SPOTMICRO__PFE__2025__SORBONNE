@@ -1,0 +1,100 @@
+# Spot Micro RL Configuration
+
+# Robot Dimensions (from RL_app spot_micro_motion_cmd.yaml)
+robot:
+  shoulder_length: 0.055        # hip_link_length (m)
+  elbow_length: 0.1075          # upper_leg_link_length (m)
+  wrist_length: 0.130           # lower_leg_link_length (m)
+  hip_x: 0.186                  # body_length (m)
+  hip_y: 0.078                  # body_width (m)
+  foot_x: 0.186                 # Default foot stance length (m)
+  foot_y: 0.17                  # Default foot stance width (m)
+  height: 0.155                 # default_stand_height (m)
+
+# Joint Limits (radians)
+joint_limits:
+  shoulder: [-0.548, 0.548]     # Hip joint (±31.4°)
+  elbow: [-2.17, 0.97]          # Shoulder joint (-124° to 56°)
+  wrist: [-0.1, 2.59]           # Knee joint (-6° to 148°)
+
+# ARS Algorithm Parameters
+ars:
+  num_deltas: 16                # Number of policy perturbations
+  num_best_deltas: 16           # Number of best deltas to use
+  step_size: 0.02               # Policy update step size
+  delta_std: 0.03               # Noise standard deviation
+  num_workers: 1                # Number of parallel workers
+  seed: 42                      # Random seed
+
+# Training Parameters
+training:
+  num_epochs: 150               # Number of training epochs
+  rollout_length: 1000          # Episode length (steps)
+  save_interval: 10             # Save checkpoint every N epochs
+  shift: 0.0                    # Return normalization shift
+
+# Environment Parameters
+environment:
+  action_dim: 14                # 12 residuals + 2 gait params
+  time_step: 0.001              # PyBullet time step (s)
+  control_freq: 100             # Control frequency (Hz)
+  action_repeat: 10             # Steps per action
+  on_rack: false                # Mount on rack for debugging
+  render: false                 # Render simulation
+
+# Reward Weights
+reward:
+  distance_weight: 1.0          # Forward velocity reward
+  energy_weight: 0.005          # Energy consumption penalty
+  drift_weight: 0.5             # Lateral drift penalty
+  shake_weight: 0.5             # Body shake penalty
+  rp_weight: 5.0                # Roll/pitch penalty
+  rate_weight: 0.05             # Angular rate penalty
+
+# Gait Parameters
+gait:
+  type: "trot"                  # Gait type: trot, walk, pace
+  phase_lags:
+    trot: [0.0, 0.5, 0.5, 0.0]  # FL, FR, BL, BR
+    walk: [0.0, 0.25, 0.5, 0.75]
+    pace: [0.0, 0.5, 0.0, 0.5]
+  tswing: 0.15                  # Swing phase duration (s)
+  clearance_height:
+    min: 0.02                   # Minimum clearance (m)
+    default: 0.04               # Default clearance (m)
+    max: 0.06                   # Maximum clearance (m)
+  penetration_depth:
+    min: 0.0                    # Minimum penetration (m)
+    default: 0.005              # Default penetration (m)
+    max: 0.01                   # Maximum penetration (m)
+
+# Motion Parameters
+motion:
+  max_step_length: 0.08         # Maximum step length (m)
+  max_velocity: 0.8             # Maximum forward velocity (m/s)
+  max_yaw_rate: 1.0             # Maximum yaw rate (rad/s)
+
+# Deployment Parameters
+deployment:
+  control_freq: 50              # Real robot control frequency (Hz)
+  use_imu: true                 # Use IMU for orientation
+  use_joint_states: true        # Use joint state feedback
+  safety_check: true            # Enable safety checks
+
+# ROS Topics
+ros_topics:
+  # Publishers
+  joint_commands: "/spot_rl/joint_commands"
+  joint_states_out: "/spot_rl/joint_states"
+  imu_out: "/spot_rl/imu"
+  
+  # Subscribers
+  joint_states_in: "/joint_states"
+  imu_in: "/imu/data"
+  cmd_vel: "/cmd_vel"
+
+# Logging
+logging:
+  save_dir: "models"            # Directory to save models
+  log_interval: 1               # Log every N epochs
+  verbose: true                 # Print detailed logs
