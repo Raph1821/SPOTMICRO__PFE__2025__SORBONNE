@@ -66,7 +66,7 @@ def ParallelWorker(childPipe, env, nb_states):
             desired_velocity = payload[4]
             desired_rate = payload[5]
             
-            state = env.reset(desired_velocity, desired_rate)
+            state = env.reset()
             sum_rewards = 0.0
             timesteps = 0
             done = False
@@ -258,7 +258,7 @@ class ARSAgent:
         Returns:
             sum_rewards: Total reward for episode
         """
-        state = self.env.reset(self.desired_velocity, self.desired_rate)
+        state = self.env.reset()
         sum_rewards = 0.0
         timesteps = 0
         done = False
@@ -389,7 +389,7 @@ class ARSAgent:
         self.policy.update(rollouts, std_dev_rewards)
         
         # Evaluate current policy
-        state = self.env.reset(self.desired_velocity, self.desired_rate)
+        state = self.env.reset()
         sum_rewards = 0.0
         timesteps = 0
         done = False
