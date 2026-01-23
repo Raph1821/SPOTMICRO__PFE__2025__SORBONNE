@@ -27,7 +27,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 
 from spot_micro_rl.spot_env import SpotMicroEnv
 from spot_micro_rl.td3 import TD3Agent
-from spot_micro_rl.randomizers import SpotEnvRandomizer
+from spot_micro_rl.spot_env_randomizer import SpotEnvRandomizer
 from spot_micro_rl.motor_model import MotorModel
 
 

@@ -126,7 +126,7 @@ class Policy:
         # Policy matrix (perception matrix)
         self.theta = np.zeros((action_dim, state_dim))
     
-    def evaluate(self, state, delta=None, direction=None):
+    def evaluate(self, state, delta=None, direction=None, update_stats=False):
         """
         Evaluate policy to get action
         
@@ -134,6 +134,7 @@ class Policy:
             state: Current state
             delta: Perturbation (for exploration)
             direction: '+' or '-' (for exploration)
+            update_stats: Ignored (for compatibility)
         
         Returns:
             action: Computed action
