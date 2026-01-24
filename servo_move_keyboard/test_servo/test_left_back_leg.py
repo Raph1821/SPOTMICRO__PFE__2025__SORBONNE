@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-from smbus2 import SMBus
+try:
+    from smbus import SMBus
+except ImportError:
+    from smbus2 import SMBus
 import time
 
 MODE1 = 0x00
