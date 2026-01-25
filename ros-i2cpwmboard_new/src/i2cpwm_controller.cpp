@@ -721,7 +721,7 @@ return 0;
 
 Example _init ("/dev/i2c-1"); // default I2C device on RPi2 and RPi3 = "/dev/i2c-1"
 */
-static void _init (const char filename)
+static void _init (const char* filename)
 {
 	int res;
 	char mode1res;
