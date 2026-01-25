@@ -4,12 +4,14 @@ Path Planner Override
 - Listens to RViz clicked goals
 - Overrides simple_explorer
 - Drives robot to clicked goal
+- Visualizes the objective goal as a red sphere in RViz
 """
 
 import rospy
 import math
 from geometry_msgs.msg import Twist, PoseStamped
 from std_msgs.msg import Bool
+from visualization_msgs.msg import Marker, MarkerArray
 import tf2_ros
 
 class PathPlanner:
@@ -28,6 +30,9 @@ class PathPlanner:
         self.cmd_vel_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=10)
         self.exploration_enable_pub = rospy.Publisher(
             "/enable_exploration", Bool, queue_size=1, latch=True
+        )
+        self.goal_marker_pub = rospy.Publisher(
+            "/goal_marker", MarkerArray, queue_size=1
         )
 
         # Subscribers
@@ -54,6 +59,9 @@ class PathPlanner:
         rospy.loginfo(
             f"New RViz goal: ({self.current_goal[0]:.2f}, {self.current_goal[1]:.2f})"
         )
+
+        # Publish goal marker
+        self.publish_goal_marker()
 
         # Disable exploration
         self.exploration_enable_pub.publish(Bool(data=False))
@@ -83,6 +91,36 @@ class PathPlanner:
     def goal_reached(self, rx, ry):
         gx, gy = self.current_goal
         return math.hypot(gx - rx, gy - ry) < self.goal_threshold
+
+    # --------------------------------------------------
+
+    def publish_goal_marker(self):
+        """Publish current goal as a red sphere marker in RViz"""
+        if self.current_goal is None:
+            return
+
+        marker = Marker()
+        marker.header.frame_id = "map"
+        marker.header.stamp = rospy.Time.now()
+        marker.ns = "path_planner_goal"
+        marker.id = 0
+        marker.type = Marker.SPHERE
+        marker.action = Marker.ADD
+        marker.pose.position.x = self.current_goal[0]
+        marker.pose.position.y = self.current_goal[1]
+        marker.pose.position.z = 0.0
+        marker.pose.orientation.w = 1.0
+        marker.scale.x = 0.2
+        marker.scale.y = 0.2
+        marker.scale.z = 0.2
+        marker.color.r = 1.0
+        marker.color.g = 0.0
+        marker.color.b = 0.0
+        marker.color.a = 0.8
+
+        marker_array = MarkerArray()
+        marker_array.markers.append(marker)
+        self.goal_marker_pub.publish(marker_array)
 
     # --------------------------------------------------
 
@@ -117,6 +155,16 @@ class PathPlanner:
             if self.goal_reached(rx, ry):
                 rospy.loginfo("Goal reached — resuming exploration")
                 self.current_goal = None
+                # Clear goal marker
+                marker = Marker()
+                marker.header.frame_id = "map"
+                marker.header.stamp = rospy.Time.now()
+                marker.ns = "path_planner_goal"
+                marker.id = 0
+                marker.action = Marker.DELETE
+                marker_array = MarkerArray()
+                marker_array.markers.append(marker)
+                self.goal_marker_pub.publish(marker_array)
                 self.exploration_enable_pub.publish(Bool(data=True))
                 self.cmd_vel_pub.publish(Twist())
                 rate.sleep()

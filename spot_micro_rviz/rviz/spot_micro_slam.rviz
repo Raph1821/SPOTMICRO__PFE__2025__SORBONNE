@@ -12,6 +12,7 @@ Panels:
         - /Path1
         - /Pose1
         - /Frontier Goal1
+        - /Path Planner Goal1
       Splitter Ratio: 0.5
     Tree Height: 1283
   - Class: rviz/Selection
@@ -355,6 +356,14 @@ Visualization Manager:
       Name: Frontier Goal
       Namespaces:
         frontier_goal: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /goal_marker
+      Name: Path Planner Goal
+      Namespaces:
+        path_planner_goal: true
       Queue Size: 100
       Value: true
   Enabled: true
