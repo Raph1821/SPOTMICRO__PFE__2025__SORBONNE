@@ -373,8 +373,6 @@ static int _smoothing (float speed)
 return speed;
 }
 
-speed = speed / max_rate;
-
 /**
  * @brief Convert meters per second to a proportional value in the range of ±1.0
  * @param speed float requested speed in meters per second
