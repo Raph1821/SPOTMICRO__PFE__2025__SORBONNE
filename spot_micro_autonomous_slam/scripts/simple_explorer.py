@@ -1,54 +1,60 @@
 #!/usr/bin/env python3
 """
-Simple Autonomous Explorer Node
-A simple exploration node that:
-1. Uses laser scan to detect obstacles
-2. Moves forward when path is clear
-3. Turns when obstacle detected
-4. Explores unknown areas in the map
+Hybrid Explorer: Frontier goals + Reactive navigation
+Uses frontier detection to find goals, but reactive control like simple_explorer
 """
 
 import rospy
 import math
 import numpy as np
 from sensor_msgs.msg import LaserScan
-from nav_msgs.msg import OccupancyGrid, Odometry
+from nav_msgs.msg import OccupancyGrid
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Bool
+from visualization_msgs.msg import Marker, MarkerArray
 import tf2_ros
-import tf2_geometry_msgs
+from scipy.ndimage import binary_dilation, label
 
-class SimpleExplorer:
+class HybridExplorer:
     def __init__(self):
-        rospy.init_node('simple_explorer', anonymous=False)
+        rospy.init_node('hybrid_explorer', anonymous=False)
         
         # Parameters
-        self.enabled = rospy.get_param('~enabled', False)  # Start disabled by default
-        self.max_forward_speed = rospy.get_param('~max_forward_speed', 0.15)  # m/s
-        self.max_turn_speed = rospy.get_param('~max_turn_speed', 0.3)  # rad/s
-        self.obstacle_distance = rospy.get_param('~obstacle_distance', 0.4)  # meters
-        self.safe_distance = rospy.get_param('~safe_distance', 0.5)  # meters
-        self.turn_angle = rospy.get_param('~turn_angle', math.pi / 2)  # 90 degrees
+        self.enabled = rospy.get_param('~enabled', True)
+        self.max_forward_speed = rospy.get_param('~max_forward_speed', 0.15)
+        self.max_turn_speed = rospy.get_param('~max_turn_speed', 0.3)
+        self.obstacle_distance = rospy.get_param('~obstacle_distance', 0.4)
+        self.turn_angle = rospy.get_param('~turn_angle', math.pi / 2)
+        
+        # Frontier parameters
+        self.frontier_min_size = 5
+        self.max_exploration_distance = 3.0
+        self.goal_reached_threshold = 0.3  # Consider goal reached when within 30cm
+        
+        # Goal-directed navigation parameters
+        self.angle_tolerance = 0.3  # ~17 degrees - acceptable heading error
+        self.goal_weight = 0.7  # How much to weight goal direction vs obstacle avoidance
         
         # State
         self.laser_scan = None
-        self.occupancy_map = None
-        self.current_pose = None
+        self.map = None
+        self.current_goal = None
+        self.robot_ready = False
+        
+        # Reactive navigation state (from simple_explorer)
         self.is_turning = False
         self.turn_start_time = None
         self.turn_duration = 0.0
-        self.last_obstacle_time = rospy.Time.now()
-        self.stuck_counter = 0
-        self.last_position = None
-        self.last_turn_direction = 1.0  # Remember last turn direction to avoid oscillation
-        self.consecutive_turns = 0  # Count consecutive turns
-        self.post_turn_forward_time = None  # Time to move forward after turning
-        self.post_turn_forward_duration = 1.0  # Move forward for 1 second after turning
+        self.last_turn_direction = 1.0
+        self.consecutive_turns = 0
+        self.post_turn_forward_time = None
+        self.post_turn_forward_duration = 1.0
         
         # Publishers
         self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
         self.stand_cmd_pub = rospy.Publisher('stand_cmd', Bool, queue_size=1, latch=True)
         self.walk_cmd_pub = rospy.Publisher('walk_cmd', Bool, queue_size=1, latch=True)
+        self.frontier_markers_pub = rospy.Publisher('/frontiers', MarkerArray, queue_size=1)
         
         # Subscribers
         self.scan_sub = rospy.Subscriber('/scan', LaserScan, self.scan_callback)
@@ -59,93 +65,206 @@ class SimpleExplorer:
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
         
-        # Robot ready flag
-        self.robot_ready = False
-        
-        rospy.loginfo("Simple Explorer initialized")
-        rospy.loginfo(f"Enabled: {self.enabled}")
-        rospy.loginfo(f"Max forward speed: {self.max_forward_speed} m/s")
-        rospy.loginfo(f"Max turn speed: {self.max_turn_speed} rad/s")
-        rospy.loginfo(f"Obstacle distance: {self.obstacle_distance} m")
+        rospy.loginfo("Hybrid Explorer initialized")
         
         if self.enabled:
             self.prepare_robot()
     
-    def enable_callback(self, msg):
-        """Enable/disable exploration"""
-        if msg.data and not self.enabled:
-            self.enabled = True
-            rospy.loginfo("Exploration enabled")
-            self.prepare_robot()
-        elif not msg.data and self.enabled:
-            self.enabled = False
-            rospy.loginfo("Exploration disabled")
-            self.stop_robot()
-    
     def prepare_robot(self):
-        """Prepare robot for exploration: stand and walk"""
+        """Prepare robot for exploration"""
         rospy.loginfo("Preparing robot for exploration...")
         stand_msg = Bool()
         stand_msg.data = True
         self.stand_cmd_pub.publish(stand_msg)
-        rospy.sleep(3.0)  # Wait for robot to stand
+        rospy.sleep(3.0)
         
         walk_msg = Bool()
         walk_msg.data = True
         self.walk_cmd_pub.publish(walk_msg)
-        rospy.sleep(1.0)  # Wait for state transition
+        rospy.sleep(1.0)
         
         self.robot_ready = True
-        rospy.loginfo("Robot ready for exploration!")
+        rospy.loginfo("Robot ready!")
     
-    def stop_robot(self):
-        """Stop robot movement"""
-        cmd = Twist()
-        self.cmd_vel_pub.publish(cmd)
+    def enable_callback(self, msg):
+        if msg.data and not self.enabled:
+            self.enabled = True
+            rospy.loginfo("Exploration enabled")
+            if not self.robot_ready:
+                self.prepare_robot()
+        elif not msg.data and self.enabled:
+            self.enabled = False
+            rospy.loginfo("Exploration disabled")
+            cmd = Twist()
+            self.cmd_vel_pub.publish(cmd)
     
     def scan_callback(self, msg):
-        """Process laser scan data"""
         self.laser_scan = msg
     
     def map_callback(self, msg):
-        """Process occupancy grid map"""
-        self.occupancy_map = msg
+        self.map = msg
     
-    def get_current_pose(self):
-        """Get current robot pose from TF"""
+    def get_robot_pose(self):
+        """Get robot position and orientation"""
         try:
             transform = self.tf_buffer.lookup_transform('map', 'base_footprint', rospy.Time(0))
-            self.current_pose = transform.transform.translation
-            return True
-        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+            x = transform.transform.translation.x
+            y = transform.transform.translation.y
+            
+            # Get yaw from quaternion
+            q = transform.transform.rotation
+            # Simple yaw extraction: atan2(2(w*z + x*y), 1 - 2(y^2 + z^2))
+            yaw = math.atan2(2.0 * (q.w * q.z + q.x * q.y),
+                           1.0 - 2.0 * (q.y * q.y + q.z * q.z))
+            
+            return (x, y, yaw)
+        except:
+            return None
+    
+    def world_to_map(self, wx, wy):
+        if self.map is None:
+            return None, None
+        mx = int((wx - self.map.info.origin.position.x) / self.map.info.resolution)
+        my = int((wy - self.map.info.origin.position.y) / self.map.info.resolution)
+        return mx, my
+    
+    def map_to_world(self, mx, my):
+        if self.map is None:
+            return None, None
+        wx = mx * self.map.info.resolution + self.map.info.origin.position.x
+        wy = my * self.map.info.resolution + self.map.info.origin.position.y
+        return wx, wy
+    
+    def is_frontier_cell(self, grid, x, y, width, height):
+        if x < 0 or x >= width or y < 0 or y >= height:
             return False
+        if grid[y, x] != 0:
+            return False
+        for dx in [-1, 0, 1]:
+            for dy in [-1, 0, 1]:
+                if dx == 0 and dy == 0:
+                    continue
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < width and 0 <= ny < height:
+                    if grid[ny, nx] == -1:
+                        return True
+        return False
+    
+    def find_frontiers(self):
+        """Find frontiers"""
+        if self.map is None:
+            return []
+        
+        width = self.map.info.width
+        height = self.map.info.height
+        grid = np.array(self.map.data, dtype=np.int8).reshape((height, width))
+        
+        frontier_mask = np.zeros((height, width), dtype=bool)
+        for y in range(0, height, 3):
+            for x in range(0, width, 3):
+                if self.is_frontier_cell(grid, x, y, width, height):
+                    frontier_mask[y, x] = True
+        
+        frontier_mask = binary_dilation(frontier_mask, iterations=2)
+        labeled_frontiers, num_regions = label(frontier_mask)
+        
+        if num_regions == 0:
+            return []
+        
+        frontiers = []
+        robot_pose = self.get_robot_pose()
+        if robot_pose is None:
+            return []
+        
+        robot_x, robot_y, _ = robot_pose
+        
+        for region_id in range(1, num_regions + 1):
+            region_cells = np.argwhere(labeled_frontiers == region_id)
+            if len(region_cells) < self.frontier_min_size:
+                continue
+            
+            centroid_y = int(np.mean(region_cells[:, 0]))
+            centroid_x = int(np.mean(region_cells[:, 1]))
+            wx, wy = self.map_to_world(centroid_x, centroid_y)
+            
+            if wx is None or wy is None:
+                continue
+            
+            distance = math.sqrt((wx - robot_x)**2 + (wy - robot_y)**2)
+            
+            if distance > self.max_exploration_distance or distance < 0.3:
+                continue
+            
+            if grid[centroid_y, centroid_x] == 100:
+                continue
+            
+            frontiers.append({
+                'position': (wx, wy),
+                'size': len(region_cells),
+                'distance': distance
+            })
+        
+        frontiers.sort(key=lambda f: f['distance'])
+        return frontiers
+    
+    def get_angle_to_goal(self):
+        """Calculate angle error to current goal"""
+        if self.current_goal is None:
+            return None
+        
+        robot_pose = self.get_robot_pose()
+        if robot_pose is None:
+            return None
+        
+        robot_x, robot_y, robot_yaw = robot_pose
+        goal_x, goal_y = self.current_goal
+        
+        # Calculate angle to goal
+        dx = goal_x - robot_x
+        dy = goal_y - robot_y
+        angle_to_goal = math.atan2(dy, dx)
+        
+        # Calculate angle error (normalize to [-pi, pi])
+        angle_error = angle_to_goal - robot_yaw
+        angle_error = math.atan2(math.sin(angle_error), math.cos(angle_error))
+        
+        return angle_error
+    
+    def is_goal_reached(self):
+        """Check if current goal is reached"""
+        if self.current_goal is None:
+            return False
+        
+        robot_pose = self.get_robot_pose()
+        if robot_pose is None:
+            return False
+        
+        robot_x, robot_y, _ = robot_pose
+        goal_x, goal_y = self.current_goal
+        
+        distance = math.sqrt((goal_x - robot_x)**2 + (goal_y - robot_y)**2)
+        return distance < self.goal_reached_threshold
     
     def check_obstacle_ahead(self):
-        """Check if there's an obstacle ahead using laser scan"""
+        """Check for obstacles"""
         if self.laser_scan is None:
-            return True  # Assume obstacle if no scan data
+            return True
         
-        # Get ranges
         ranges = np.array(self.laser_scan.ranges)
-        
-        # Filter out invalid readings
         valid_ranges = ranges[np.isfinite(ranges)]
         if len(valid_ranges) == 0:
-            return True  # Assume obstacle if no valid readings
+            return True
         
-        # Check front sector (30 degrees on each side of front)
         num_readings = len(ranges)
         angle_increment = self.laser_scan.angle_increment
         angle_min = self.laser_scan.angle_min
         
-        # Front sector: -30 to +30 degrees
-        front_start_angle = -math.pi / 6  # -30 degrees
-        front_end_angle = math.pi / 6     # +30 degrees
+        front_start_angle = -math.pi / 6
+        front_end_angle = math.pi / 6
         
         front_start_idx = int((front_start_angle - angle_min) / angle_increment)
         front_end_idx = int((front_end_angle - angle_min) / angle_increment)
         
-        # Ensure indices are valid
         front_start_idx = max(0, min(front_start_idx, num_readings - 1))
         front_end_idx = max(0, min(front_end_idx, num_readings - 1))
         
@@ -156,20 +275,52 @@ class SimpleExplorer:
         front_ranges = front_ranges[np.isfinite(front_ranges)]
         
         if len(front_ranges) == 0:
-            return True  # Assume obstacle if no valid front readings
-        
-        min_front_distance = np.min(front_ranges)
-        
-        # Check if obstacle is too close
-        if min_front_distance < self.obstacle_distance:
             return True
         
-        return False
+        return np.min(front_ranges) < self.obstacle_distance
     
-    def find_best_direction(self):
-        """Find the best direction to turn based on laser scan"""
+    def find_best_direction_to_goal(self):
+        """
+        Find best turn direction considering BOTH goal and obstacles
+        This is the KEY improvement over simple_explorer
+        """
+        angle_to_goal = self.get_angle_to_goal()
+        
+        # If no goal, fall back to obstacle-based direction
+        if angle_to_goal is None:
+            return self.find_best_direction_obstacles()
+        
+        # Prefer turning toward goal
+        if abs(angle_to_goal) < 0.1:  # Almost aligned
+            return 0.0  # No turn needed
+        elif angle_to_goal > 0:
+            preferred_direction = 1.0  # Turn left to goal
+        else:
+            preferred_direction = -1.0   # Turn right to goal
+        
+        # Check if turning toward goal is safe
+        obstacle_direction = self.find_best_direction_obstacles()
+        
+        # If obstacle avoidance agrees with goal direction, use it
+        if preferred_direction == obstacle_direction:
+            rospy.loginfo_throttle(2.0, f"✓ Turning toward goal (angle_err={math.degrees(angle_to_goal):.1f}°)")
+            return preferred_direction
+        
+        # Conflict: goal wants one direction, obstacles want another
+        # Weight them: 70% goal, 30% obstacles
+        if abs(angle_to_goal) > math.pi / 3:  # >60 degrees off
+            # Goal is far off to the side, prioritize it more
+            rospy.loginfo_throttle(2.0, f"⚠ Large angle to goal ({math.degrees(angle_to_goal):.1f}°), prioritizing goal direction")
+            return preferred_direction
+        else:
+            # Goal is somewhat aligned, consider obstacles more
+            rospy.loginfo_throttle(2.0, f"⚡ Obstacle conflict, using obstacle direction")
+            return obstacle_direction
+    
+    def find_best_direction_obstacles(self):
+        """Find best turn direction based only on obstacles (original logic)"""
         if self.laser_scan is None:
-            return self.last_turn_direction  # Use last direction if no scan
+            return self.last_turn_direction
         
         ranges = np.array(self.laser_scan.ranges)
         ranges = np.where(np.isfinite(ranges), ranges, self.laser_scan.range_max)
@@ -178,28 +329,16 @@ class SimpleExplorer:
         angle_increment = self.laser_scan.angle_increment
         angle_min = self.laser_scan.angle_min
         
-        # Check left and right sides (avoid front)
-        # Left side: 90 to 180 degrees (or equivalent)
-        # Right side: -90 to -180 degrees (or equivalent)
+        left_start_idx = int((math.pi/2 - angle_min) / angle_increment)
+        left_end_idx = int((math.pi - angle_min) / angle_increment)
+        right_start_idx = int((-math.pi - angle_min) / angle_increment)
+        right_end_idx = int((-math.pi/2 - angle_min) / angle_increment)
         
-        # Find indices for left and right sectors
-        left_start_angle = math.pi / 2  # 90 degrees
-        left_end_angle = math.pi  # 180 degrees
-        right_start_angle = -math.pi  # -180 degrees
-        right_end_angle = -math.pi / 2  # -90 degrees
-        
-        left_start_idx = int((left_start_angle - angle_min) / angle_increment)
-        left_end_idx = int((left_end_angle - angle_min) / angle_increment)
-        right_start_idx = int((right_start_angle - angle_min) / angle_increment)
-        right_end_idx = int((right_end_angle - angle_min) / angle_increment)
-        
-        # Ensure indices are valid
         left_start_idx = max(0, min(left_start_idx, num_readings - 1))
         left_end_idx = max(0, min(left_end_idx, num_readings - 1))
         right_start_idx = max(0, min(right_start_idx, num_readings - 1))
         right_end_idx = max(0, min(right_end_idx, num_readings - 1))
         
-        # Get left and right ranges
         if left_start_idx < left_end_idx:
             left_ranges = ranges[left_start_idx:left_end_idx+1]
         else:
@@ -213,135 +352,181 @@ class SimpleExplorer:
         left_ranges = left_ranges[np.isfinite(left_ranges)]
         right_ranges = right_ranges[np.isfinite(right_ranges)]
         
-        # Calculate average distance for left and right
         left_avg = np.mean(left_ranges) if len(left_ranges) > 0 else 0.0
         right_avg = np.mean(right_ranges) if len(right_ranges) > 0 else 0.0
         
-        # If consecutive turns, prefer same direction to avoid oscillation
         if self.consecutive_turns > 2:
-            rospy.loginfo(f"Consecutive turns detected ({self.consecutive_turns}), using last direction to avoid oscillation")
             return self.last_turn_direction
         
-        # Choose direction with more open space
-        if left_avg > right_avg * 1.1:  # Left is significantly more open
-            return -1.0  # Turn left
-        elif right_avg > left_avg * 1.1:  # Right is significantly more open
-            return 1.0  # Turn right
+        if left_avg > right_avg * 1.1:
+            return -1.0
+        elif right_avg > left_avg * 1.1:
+            return 1.0
         else:
-            # Similar, use last direction to avoid oscillation
             return self.last_turn_direction
     
+    def publish_goal_marker(self):
+        """Publish current goal as a green sphere marker"""
+        if self.current_goal is None:
+            return
+        
+        marker = Marker()
+        marker.header.frame_id = "map"
+        marker.header.stamp = rospy.Time.now()
+        marker.ns = "frontier_goal"
+        marker.id = 0
+        marker.type = Marker.SPHERE
+        marker.action = Marker.ADD
+        marker.pose.position.x = self.current_goal[0]
+        marker.pose.position.y = self.current_goal[1]
+        marker.pose.position.z = 0.0
+        marker.pose.orientation.w = 1.0
+        marker.scale.x = 0.2
+        marker.scale.y = 0.2
+        marker.scale.z = 0.2
+        marker.color.r = 0.0
+        marker.color.g = 1.0
+        marker.color.b = 0.0
+        marker.color.a = 0.8
+        
+        marker_array = MarkerArray()
+        marker_array.markers.append(marker)
+        self.frontier_markers_pub.publish(marker_array)
+    
+    def navigate_with_goal(self):
+        """
+        Goal-directed reactive navigation
+        Combines goal seeking with obstacle avoidance
+        """
+        cmd = Twist()
+        
+        # Check if goal is reached
+        if self.is_goal_reached():
+            rospy.loginfo("✓ Goal reached! Finding new frontier...")
+            self.current_goal = None
+            cmd.linear.x = 0.0
+            cmd.angular.z = 0.0
+            return cmd
+        
+        # Get angle to goal
+        angle_to_goal = self.get_angle_to_goal()
+        
+        if angle_to_goal is not None:
+            # Adjust angular velocity to point toward goal
+            # But limit it to avoid spinning in place
+            angular_cmd = max(-self.max_turn_speed, 
+                            min(self.max_turn_speed, 
+                                angle_to_goal * 1.5))  # Proportional control
+            
+            # Move forward while turning (unless angle is very large)
+            if abs(angle_to_goal) > math.pi / 2:  # >90 degrees
+                # Need to turn a lot, slow down forward motion
+                linear_cmd = self.max_forward_speed * 0.3
+            elif abs(angle_to_goal) > math.pi / 4:  # >45 degrees
+                # Moderate turn, half speed
+                linear_cmd = self.max_forward_speed * 0.5
+            else:
+                # Mostly aligned, full speed
+                linear_cmd = self.max_forward_speed
+            
+            cmd.linear.x = linear_cmd
+            cmd.angular.z = angular_cmd
+            
+            rospy.loginfo_throttle(2.0, 
+                f"→ Goal nav: angle_err={math.degrees(angle_to_goal):.1f}°, "
+                f"cmd=({linear_cmd:.2f}, {angular_cmd:.2f})")
+        else:
+            # No goal, just move forward
+            cmd.linear.x = self.max_forward_speed
+            cmd.angular.z = 0.0
+        
+        return cmd
+    
     def run(self):
-        """Main exploration loop"""
-        rate = rospy.Rate(10)  # 10 Hz
+        """Main loop - GOAL-DIRECTED reactive navigation"""
+        rate = rospy.Rate(10)
+        last_frontier_check = rospy.Time.now()
+        
+        rospy.loginfo("=== Hybrid Explorer Started ===")
+        rospy.loginfo("Mode: Goal-directed reactive navigation")
         
         while not rospy.is_shutdown():
-            if not self.enabled:
+            if not self.enabled or not self.robot_ready:
                 rate.sleep()
                 continue
             
-            if not self.robot_ready:
-                rate.sleep()
-                continue
-            
-            # Get current pose
-            if not self.get_current_pose():
-                rospy.logwarn_throttle(5.0, "Waiting for TF transform (map -> base_footprint)...")
-                rate.sleep()
-                continue
-            
-            # Check if stuck (not moving)
-            if self.last_position is not None:
-                dist_moved = math.sqrt(
-                    (self.current_pose.x - self.last_position.x)**2 +
-                    (self.current_pose.y - self.last_position.y)**2
-                )
-                if dist_moved < 0.05:  # Moved less than 5cm
-                    self.stuck_counter += 1
+            # Update frontier goal every 3 seconds or when goal reached
+            if self.current_goal is None or \
+               (rospy.Time.now() - last_frontier_check).to_sec() > 3.0:
+                frontiers = self.find_frontiers()
+                if frontiers:
+                    self.current_goal = frontiers[0]['position']
+                    rospy.loginfo(f"🎯 New frontier goal: ({self.current_goal[0]:.2f}, {self.current_goal[1]:.2f}), dist={frontiers[0]['distance']:.2f}m")
                 else:
-                    self.stuck_counter = 0
-                    self.last_position = self.current_pose
+                    rospy.loginfo("No frontiers found, continuing exploration")
+                last_frontier_check = rospy.Time.now()
             
-            if self.last_position is None:
-                self.last_position = self.current_pose
+            # Publish goal marker
+            self.publish_goal_marker()
             
-            # If stuck for too long, turn
-            if self.stuck_counter > 50:  # 5 seconds at 10Hz
-                rospy.logwarn("Robot appears stuck, turning...")
-                self.is_turning = True
-                self.turn_start_time = rospy.Time.now()
-                self.turn_duration = 2.0  # Turn for 2 seconds
-                self.stuck_counter = 0
-            
-            # Create velocity command
             cmd = Twist()
             
-            # If we just finished turning, move forward for a bit before checking obstacles again
+            # Post-turn forward period (from simple_explorer)
             if self.post_turn_forward_time is not None:
                 elapsed = (rospy.Time.now() - self.post_turn_forward_time).to_sec()
                 if elapsed < self.post_turn_forward_duration:
-                    # Continue moving forward after turn
                     cmd.linear.x = self.max_forward_speed
                     cmd.angular.z = 0.0
                     self.cmd_vel_pub.publish(cmd)
                     rate.sleep()
                     continue
                 else:
-                    # Forward period finished, reset
                     self.post_turn_forward_time = None
-                    self.consecutive_turns = 0  # Reset counter after successful forward movement
+                    self.consecutive_turns = 0
             
             # Check for obstacles
             obstacle_ahead = self.check_obstacle_ahead()
             
             if obstacle_ahead or self.is_turning:
-                # Turn
+                # OBSTACLE AVOIDANCE MODE (with goal-awareness)
                 if not self.is_turning:
-                    # Start turning
                     self.is_turning = True
                     self.turn_start_time = rospy.Time.now()
-                    turn_direction = self.find_best_direction()
+                    
+                    # KEY CHANGE: Use goal-aware turn direction
+                    turn_direction = self.find_best_direction_to_goal()
                     self.turn_direction = turn_direction
                     self.last_turn_direction = turn_direction
                     self.consecutive_turns += 1
                     
-                    # Increase turn angle if consecutive turns (stuck in corner)
                     turn_angle = self.turn_angle
                     if self.consecutive_turns > 2:
-                        turn_angle = self.turn_angle * 1.5  # Turn 135 degrees instead of 90
-                        rospy.logwarn(f"Consecutive turns: {self.consecutive_turns}, increasing turn angle to {math.degrees(turn_angle)} degrees")
+                        turn_angle = self.turn_angle * 1.5
                     
                     self.turn_duration = abs(turn_angle / self.max_turn_speed)
-                    rospy.loginfo(f"Obstacle detected, turning {'right' if turn_direction > 0 else 'left'} ({math.degrees(turn_angle):.1f} degrees)")
+                    rospy.loginfo(f"⚠ Obstacle - turning {'right' if turn_direction > 0 else 'left'}")
                 
-                # Continue turning
                 elapsed = (rospy.Time.now() - self.turn_start_time).to_sec()
                 if elapsed < self.turn_duration:
                     cmd.angular.z = self.max_turn_speed * self.turn_direction
                     cmd.linear.x = 0.0
                 else:
-                    # Finished turning, start forward movement period
                     self.is_turning = False
                     self.post_turn_forward_time = rospy.Time.now()
-                    rospy.loginfo("Turn completed, moving forward before next obstacle check")
                     cmd.angular.z = 0.0
-                    cmd.linear.x = self.max_forward_speed  # Start moving forward immediately
+                    cmd.linear.x = self.max_forward_speed
             else:
-                # Move forward (no obstacle)
-                cmd.linear.x = self.max_forward_speed
-                cmd.angular.z = 0.0
+                # NO OBSTACLE - Navigate toward goal
+                cmd = self.navigate_with_goal()
                 self.is_turning = False
-                self.consecutive_turns = 0  # Reset counter when moving forward successfully
+                self.consecutive_turns = 0
             
-            # Publish command
             self.cmd_vel_pub.publish(cmd)
-            
             rate.sleep()
 
 if __name__ == '__main__':
     try:
-        explorer = SimpleExplorer()
+        explorer = HybridExplorer()
         explorer.run()
     except rospy.ROSInterruptException:
-        rospy.loginfo("Simple Explorer shutting down")
-
+        pass

@@ -52,7 +52,6 @@ catkin_install_python(PROGRAMS
   scripts/frontier_exploration_client.py
   scripts/map_saver.py
   scripts/odom_publisher.py
-  scripts/diagnose_navigation.py
   scripts/simple_explorer.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

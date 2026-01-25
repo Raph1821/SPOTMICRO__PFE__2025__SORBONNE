@@ -41,9 +41,9 @@
     <!-- ====== Simple Explorer Node ====== -->
     <node name="simple_explorer" pkg="spot_micro_autonomous_slam" type="simple_explorer.py" output="screen">
         <param name="enabled" value="$(arg enabled)"/>
-        <param name="max_forward_speed" value="0.4"/>  <!-- m/s -->
-        <param name="max_turn_speed" value="0.4"/>      <!-- rad/s -->
-        <param name="obstacle_distance" value="0.3"/>   <!-- meters -->
+        <param name="max_forward_speed" value="0.25"/>  <!-- m/s -->
+        <param name="max_turn_speed" value="0.3"/>      <!-- rad/s -->
+        <param name="obstacle_distance" value="0.45"/>   <!-- meters -->
         <param name="safe_distance" value="0.45"/>       <!-- meters -->
         <param name="turn_angle" value="1.57"/>          <!-- 90 degrees in radians -->
     </node>

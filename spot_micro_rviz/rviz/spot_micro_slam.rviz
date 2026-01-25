@@ -11,6 +11,7 @@ Panels:
         - /Map1
         - /Path1
         - /Pose1
+        - /Frontier Goal1
       Splitter Ratio: 0.5
     Tree Height: 1283
   - Class: rviz/Selection
@@ -347,6 +348,14 @@ Visualization Manager:
       Shape: Axes
       Topic: /slam_out_pose
       Unreliable: false
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /frontiers
+      Name: Frontier Goal
+      Namespaces:
+        frontier_goal: true
+      Queue Size: 100
       Value: true
   Enabled: true
   Global Options:
