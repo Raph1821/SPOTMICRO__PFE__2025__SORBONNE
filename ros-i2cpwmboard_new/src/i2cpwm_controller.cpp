@@ -203,7 +203,7 @@ extern "C" {
 #include "i2cpwm_board/PositionArray.h"
 // request/response of the integer parameter services
 #include "i2cpwm_board/IntValue.h"
-#include
+
 
 /// @cond PRIVATE_NO_PUBLIC DOC
 
@@ -282,16 +282,15 @@ int _controller_io_device; // linux file for I2C
 
 int _pwm_frequency = 50; // frequency determines the size of a pulse width; higher numbers make RC servos buzz
 
-///////////////////
 
-#include
-#include
+#include <mutex>
+#include <atomic>
 
 static std::mutex _cmd_mtx;
 static i2cpwm_board::ServoArray _last_prop_cmd;
 static i2cpwm_board::ServoArray _last_abs_cmd;
-static std::atomic _have_prop(false);
-static std::atomic _have_abs(false);
+static std::atomic<bool> _have_prop(false);
+static std::atomic<bool> _have_abs(false);
 
 static double _hw_rate_hz = 50.0; // servo update rate
 static float _eps_prop = 0.0025f; // change threshold for proportional (-1..1)
@@ -1195,14 +1194,7 @@ for (i=0; i<(_last_servo); i++) {
 }
 
 // ------------------------------------------------------------------------------------------------------------------------------------
-/@}*/
-/
-\defgroup Services Services interfaces provided by this package
-@{ */
-// services
-// ------------------------------------------------------------------------------------------------------------------------------------
-
-/**
+// Doxygen group and service documentation removed due to invalid C++/Doxygen syntax
 \brief service to set set PWM frequency
 
 The PWM boards drive LED and servos using pulse width modulation. The 12 bit interface means values are 0..4096.
