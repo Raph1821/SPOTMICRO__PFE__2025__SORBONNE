@@ -1,11 +1,22 @@
-# Spot Micro Quadruped Project
+# Spot Micro Quadruped Project - Sorbonne University End of Studies Project (PFE 2025)
 
 ![Spot Micro Walking](assets/spot_micro_walking.gif)
 ![RVIZ](assets/rviz_animation.gif)
 ![slam](assets/spot_micro_slam.gif)
 
+**Base Project Credit**: This project is built upon the original Spot Micro Quadruped project. We extend our gratitude to the original developers and the open-source community for the foundational work.
 
 Video of robot: https://www.youtube.com/watch?v=S-uzWG9Z-5E
+
+## Project Overview
+
+This repository represents an enhanced version of the Spot Micro Quadruped project, developed as a Sorbonne University End of Studies Project (PFE). We have added several advanced functionalities to the original codebase while maintaining backward compatibility with existing features.
+
+### New Features Added (PFE 2025)
+- **PyBullet Simulation**: Full physics-based simulation environment for testing and development without physical hardware
+- **Autonomous Exploration & Path Planning**: Frontier-based exploration with automatic goal generation and navigation (Work in Progress)
+- **Reinforcement Learning**: Deep RL training framework for learning robust and adaptive gaits
+- **Gesture Recognition**: Computer vision-based gesture recognition to command robot actions (stand, walk, idle)
 
 * [**Installation Guide**](#installation-guide)
 * [Overview](#Overview)
@@ -15,6 +26,10 @@ Video of robot: https://www.youtube.com/watch?v=S-uzWG9Z-5E
     * [URDF](#urdf-model)
     * [TF2 Publishing and Odometry](#tf2-publishing-and-odometry)
     * [SLAM](#slam)
+    * [PyBullet Simulation](#pybullet-simulation)
+    * [Autonomous Exploration](#autonomous-exploration)
+    * [Reinforcement Learning](#reinforcement-learning-for-robust-gaits)
+    * [Gesture Recognition](#gesture-recognition)
 * [Future Work](#future-work)
 * [External Links](#external-links)
 
@@ -23,12 +38,12 @@ Video of robot: https://www.youtube.com/watch?v=S-uzWG9Z-5E
 **[📖 Installation Guide](installation_guide.md)**
 
 The installation guide covers:
-- ✅ Hardware requirements
-- ✅ Ubuntu 20.04 installation on Raspberry Pi
-- ✅ ROS Noetic installation
-- ✅ Dependencies and workspace setup
-- ✅ Building and testing the project
-- ✅ Troubleshooting common issues
+- Hardware requirements
+- Ubuntu 20.04 installation on Raspberry Pi
+- ROS Noetic installation
+- Dependencies and workspace setup
+- Building and testing the project
+- Troubleshooting common issues
 
 ## Overview
 This project is the source code for a Spot Micro quadruped, a 4 legged open source robot. This code implements motion control of a 3d printed spot micro robot, including sit, stand, angle and walk control. Supporting libraries provide additional capabilities, such as mapping through SLAM and a body mounted lidar. The software is implemented on a Raspberry Pi 4B 8GB running Ubuntu 20.04 with ROS Noetic installed.
@@ -198,18 +213,71 @@ An odometry frame, `odom`, is optionally available and can be enabled via a conf
 #### SLAM
 If a lidar, such as a RPLidar A1, is mounted to the robot frame, 2d mapping is possible through SLAM with additional ROS nodes, such as hector_slam. More information about running SLAM through this project is described in the [SLAM information](docs/slam_information.md) document.
 
+#### PyBullet Simulation
+The project includes a PyBullet-based physics simulator for development, testing, and validation without requiring physical hardware. This allows for:
+- Testing control algorithms in a safe simulated environment
+- Validating motion planning before deployment
+- Training machine learning models
+
+Launch the simulation with:
+```bash
+roslaunch spot_micro_pybullet pybullet_simulation.launch use_gui:=true
+```
+
+#### Autonomous Exploration
+An autonomous exploration system has been implemented using frontier detection and reactive navigation. The system:
+- Detects frontier boundaries between known and unknown map regions
+- Selects exploration goals based on proximity and frontier size
+- Navigates to goals using reactive obstacle avoidance
+- Integrates with SLAM for real-time map building
+
+Launch autonomous exploration with:
+```bash
+roslaunch spot_micro_autonomous_slam simple_exploration.launch use_pybullet:=true enabled:=true rviz:=true
+```
+
+See the [SLAM information](docs/slam_information.md) document for more details.
+
+#### Reinforcement Learning for Robust Gaits
+A reinforcement learning framework (`spot_micro_rl`) is provided for training adaptive and robust gaits. The package includes:
+- PPO (Proximal Policy Optimization) training algorithm
+- Custom reward functions optimized for Spot Micro locomotion
+- Simulation-based training environment
+- Model saving and evaluation tools
+
+See the [Integration Guide](spot_micro_rl/INTEGRATION_GUIDE.md) and the [RL package README](spot_micro_rl/README.md) for detailed training instructions.
+
+#### Gesture Recognition
+A computer vision module enables gesture-based control of the robot using a webcam or built-in camera. The system recognizes hand gestures and commands the robot to:
+- **Stand**: Raise the robot to standing position
+- **Walk**: Enter walking mode with forward/backward control
+- **Idle**: Return the robot to idle/sitting position
+
+This enables intuitive, hands-free control of the robot for demonstrations and interactive applications.
+
 ## Future Work
 The current software supports basic state machine operation of the spot micro robot, orientation control at rest, and rate command in forward, sideways, and yaw directions, completely through external command messages.
 
-My desired future goals for this project, in order of preference, are to:
-1. ~~Incorporate a lidar (particularly the Slamtec RPLIDAR A1) to achieve simple 2D mapping of a room via SLAM. This may require the addition of an IMU for robot orientation sensing (for example, an Adafruit 9-DOF IMU BNO055).~~
-2. Develop an autonomous motion planning module to guide the robot to execute a simple task around a sensed 2D environment. For example, navigate the perimeter of a room, and dynamically avoid introduced obstacles.
-3. Incorporate a camera or webcam and create a software module to conduct basic image classification. For example, perceive a closed fist or open palm, and have the robot react in specific ways to each.
-4. Implement a more advanced robot controller that can reject external disturbances. 
+### Original Project Goals (Completed)
+1. Incorporate a lidar (particularly the Slamtec RPLIDAR A1) to achieve simple 2D mapping of a room via SLAM.
+2. Develop an autonomous motion planning module to guide the robot to execute a simple task around a sensed 2D environment (frontier-based exploration).
+3. Incorporate a camera and create a software module to conduct gesture recognition (hand gesture classification).
+
+### Sorbonne PFE 2025 Goals and Ongoing Work
+1. PyBullet Simulation environment integration
+2. **Autonomous Exploration** (Work in Progress): Improve path planning efficiency and obstacle handling
+3. **Reinforcement Learning** (Work in Progress): Enhance gait robustness and generalization across terrain variations
+4. **Gesture Recognition** (Work in Progress): Expand gesture vocabulary and improve recognition accuracy
+5. Future: Implement terrain adaptation for RL-trained gaits
+6. Future: Integrate with dynamic obstacle avoidance for safer autonomous operation 
 
 ## External Links and References
+
+### Original Project Credit
+* **Original Spot Micro Project**: https://github.com/mike4192/spot_micro - The foundation upon which this enhanced version is built
 * Spot Micro AI community: https://gitlab.com/custom_robots/spotmicroai
 
+### Research and References
 * Research paper used for inverse kinematics: 
 `Sen, Muhammed Arif & Bakircioglu, Veli & Kalyoncu, Mete. (2017). 
 Inverse Kinematic Analysis Of A Quadruped Robot.
@@ -218,10 +286,11 @@ International Journal of Scientific & Technology Research. 6.`
 * Stanford robotics for inspiration for gait code: https://github.com/stanfordroboticsclub/StanfordQuadruped
 * Spot micro URDF model copied and modified from Florian Wilk's repo
     * https://gitlab.com/custom_robots/spotmicroai/simulation/-/tree/master/Basic%20simulation%20by%20user%20Florian%20Wilk
-* List of submodules utilized:
-    * ros-i2cpwmboard by bradanlane for PCA9685 support
-        * https://gitlab.com/bradanlane/ros-i2cpwmboard
-    * spot_micro_kinematics_python by me :) for python spot micro kinematic calculations:
-        * https://github.com/mike4192/spot_micro_kinematics_python 
-    * spot_micro_kinematics_cpp by me :) for c++ spot micro kinematic calculations:
-        * https://github.com/mike4192/spot_micro_kinematics_cpp
+
+### Submodules and Dependencies
+* ros-i2cpwmboard by bradanlane for PCA9685 support
+    * https://gitlab.com/bradanlane/ros-i2cpwmboard
+* spot_micro_kinematics_python for python spot micro kinematic calculations:
+    * https://github.com/mike4192/spot_micro_kinematics_python 
+* spot_micro_kinematics_cpp for c++ spot micro kinematic calculations:
+    * https://github.com/mike4192/spot_micro_kinematics_cpp
