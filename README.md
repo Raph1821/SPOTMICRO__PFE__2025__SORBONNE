@@ -1,12 +1,6 @@
 # Spot Micro Quadruped Project - Sorbonne University End of Studies Project (PFE 2025)
 
-![Spot Micro Walking](assets/spot_micro_walking.gif)
-![RVIZ](assets/rviz_animation.gif)
-![slam](assets/spot_micro_slam.gif)
-
 **Base Project Credit**: This project is built upon the original Spot Micro Quadruped project. We extend our gratitude to the original developers and the open-source community for the foundational work.
-
-Video of robot: https://www.youtube.com/watch?v=S-uzWG9Z-5E
 
 ## Project Overview
 
