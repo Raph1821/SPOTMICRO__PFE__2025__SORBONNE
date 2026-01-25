@@ -356,15 +356,15 @@ return v1;
 }
 
 /**
-\private method to smooth a speed value
-
-we calculate each speed using a cosine 'curve', this results in the output curve
-being shallow at 'stop', full forward, and full reverse and becoming
-more aggressive in the middle or each direction
-
-@param speed an int value (±1.0) indicating original speed
-@returns an integer value (±1.0) smoothed for more gentle acceleration
-/
+ * @brief Smooth a speed value for more gentle acceleration
+ *
+ * We calculate each speed using a cosine 'curve', this results in the output curve
+ * being shallow at 'stop', full forward, and full reverse and becoming
+ * more aggressive in the middle or each direction
+ *
+ * @param speed an int value (±1.0) indicating original speed
+ * @returns an integer value (±1.0) smoothed for more gentle acceleration
+ */
 static int _smoothing (float speed)
 {
 
@@ -376,10 +376,10 @@ return speed;
 speed = speed / max_rate;
 
 /**
-\private method to convert meters per second to a proportional value in the range of ±1.0
-@param speed float requested speed in meters per second
-@returns float value (±1.0) for servo speed
-/
+ * @brief Convert meters per second to a proportional value in the range of ±1.0
+ * @param speed float requested speed in meters per second
+ * @returns float value (±1.0) for servo speed
+ */
 static float _convert_mps_to_proportional (float speed)
 {
 	// we use the drive mouter output rpm and wheel radius to compute the conversion
@@ -938,7 +938,7 @@ rostopic pub -1 /servos_proportional i2cpwm_board/ServoArray "{servos:[{servo: 9
 
 void servos_proportional (const i2cpwm_board::ServoArray::ConstPtr& msg)
 {
-/ this subscription works on the active_board */
+/* this subscription works on the active_board */
 
 // for(std::vector<i2cpwm_board::Servo>::const_iterator sp = msg->servos.begin(); sp != msg->servos.end(); ++sp) {
 //     int servo = sp->servo;
