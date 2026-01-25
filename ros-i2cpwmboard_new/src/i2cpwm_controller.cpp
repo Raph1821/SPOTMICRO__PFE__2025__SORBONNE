@@ -367,46 +367,43 @@ more aggressive in the middle or each direction
 /
 static int _smoothing (float speed)
 {
-/ if smoothing is desired, then remove the commented code /
+
+// if smoothing is desired, then remove the commented code
 // speed = (cos(_PI(((float)1.0 - speed))) + 1) / 2;
 return speed;
 }
 
+speed = speed / max_rate;
+
 /**
 \private method to convert meters per second to a proportional value in the range of ±1.0
-
 @param speed float requested speed in meters per second
 @returns float value (±1.0) for servo speed
 /
 static float _convert_mps_to_proportional (float speed)
 {
-/ we use the drive mouter output rpm and wheel radius to compute the conversion */
-
-float initial, max_rate;	// the max m/s is ((rpm/60) * (2*PI*radius))
-
-initial = speed;
-
-if (_active_drive.rpm <= 0.0) {
-    ROS_ERROR("Invalid active drive mode RPM %6.4f :: RPM must be greater than 0", _active_drive.rpm);
-	return 0.0;
-}
-if (_active_drive.radius <= 0.0) {
-    ROS_ERROR("Invalid active drive mode radius %6.4f :: wheel radius must be greater than 0", _active_drive.radius);
-	return 0.0;
-}
-
-max_rate = (_active_drive.radius * _PI * 2) * (_active_drive.rpm / 60.0);
-
-speed = speed / max_rate;
-// speed = _absmin (speed, 1.0);
-
-ROS_DEBUG("%6.4f = convert_mps_to_proportional ( speed(%6.4f) / ((radus(%6.4f) * pi(%6.4f) * 2) * (rpm(%6.4f) / 60.0)) )", speed, initial, _active_drive.radius, _PI, _active_drive.rpm);
-return speed;
+	// we use the drive mouter output rpm and wheel radius to compute the conversion
+	float initial, max_rate; // the max m/s is ((rpm/60) * (2*PI*radius))
+	initial = speed;
+	if (_active_drive.rpm <= 0.0) {
+		ROS_ERROR("Invalid active drive mode RPM %6.4f :: RPM must be greater than 0", _active_drive.rpm);
+		return 0.0;
+	}
+	if (_active_drive.radius <= 0.0) {
+		ROS_ERROR("Invalid active drive mode radius %6.4f :: wheel radius must be greater than 0", _active_drive.radius);
+		return 0.0;
+	}
+	max_rate = (_active_drive.radius * _PI * 2) * (_active_drive.rpm / 60.0);
+	speed = speed / max_rate;
+	// speed = _absmin (speed, 1.0);
+	ROS_DEBUG("%6.4f = convert_mps_to_proportional ( speed(%6.4f) / ((radus(%6.4f) * pi(%6.4f) * 2) * (rpm(%6.4f) / 60.0)) )", speed, initial, _active_drive.radius, _PI, _active_drive.rpm);
+	return speed;
 }
 
 /**
 
-\private method to set a pulse frequency
+* \private method to set a pulse frequency
+*
 *The pulse defined by start/stop will be active on all channels until any subsequent call changes it.
 *@param frequency an int value (1..15000) indicating the pulse frequency where 50 is typical for RC servos
 *Example _set_frequency (68) // set the pulse frequency to 68Hz
@@ -454,7 +451,8 @@ if (0 > i2c_smbus_write_byte_data(_controller_io_handle, __MODE1, oldmode | 0x80
 
 /**
 
-\private method to set a common value for all PWM channels on the active board
+* \private method to set a common value for all PWM channels on the active board
+*
 *The pulse defined by start/stop will be active on all channels until any subsequent call changes it.
 *@param start an int value (0..4096) indicating when the pulse will go high sending power to each channel.
 *@param end an int value (0..4096) indicating when the pulse will go low stoping power to each channel.
@@ -481,7 +479,8 @@ if (0 > i2c_smbus_write_byte_data (_controller_io_handle, __ALL_CHANNELS_OFF_H, 
 
 /**
 
-\private method to set the active board
+* \private method to set the active board
+*
 *@param board an int value (1..62) indicating which board to activate for subsequent service and topic subscription activity where 1 coresponds to the default board address of 0x40 and value increment up
 *Example _set_active_board (68) // set the pulse frequency to 68Hz
 */
@@ -534,7 +533,8 @@ if (_active_board != board) {
 
 /**
 
-\private method to set a value for a PWM channel on the active board
+* \private method to set a value for a PWM channel on the active board
+*
 *The pulse defined by start/stop will be active on the specified servo channel until any subsequent call changes it.
 *@param servo an int value (1..16) indicating which channel to change power
 *@param start an int value (0..4096) indicating when the pulse will go high sending power to each channel.
@@ -578,7 +578,8 @@ if (0 > i2c_smbus_write_byte_data (_controller_io_handle, __CHANNEL_OFF_H+4*chan
 
 /**
 
-\private method to set a value for a PWM channel, based on a range of ±1.0, on the active board
+* \private method to set a value for a PWM channel, based on a range of ±1.0, on the active board
+*
 *The pulse defined by start/stop will be active on the specified servo channel until any subsequent call changes it.
 *@param servo an int value (1..16) indicating which channel to change power
 *@param value an int value (±1.0) indicating when the size of the pulse for the channel.
@@ -616,7 +617,8 @@ ROS_DEBUG("servo[%d] = (direction(%d) * ((range(%d) / 2) * value(%6.4f))) + %d =
 
 /**
 
-\private method to configure a servo on the active board
+* \private method to configure a servo on the active board
+*
 *@param servo an int value (1..16)
 *@param center an int value gt 1
 *@param range int value gt 1
@@ -718,72 +720,46 @@ return 0;
 @param devicename a string value indicating the linux I2C device
 
 Example _init ("/dev/i2c-1"); // default I2C device on RPi2 and RPi3 = "/dev/i2c-1"
-/
+*/
 static void _init (const char filename)
 {
-int res;
-char mode1res;
-int i;
+	int res;
+	char mode1res;
+	int i;
+	/* initialize all of the global data objects */
+	for (i=0; i<MAX_BOARDS;i++)
+		_pwm_boards[i] = -1;
+	_active_board = -1;
 
-/* initialize all of the global data objects */
+	for (i=0; i<(MAX_SERVOS);i++) {
+		// these values have not useful meaning
+		_servo_configs[i].center = -1;
+		_servo_configs[i].range = -1;
+		_servo_configs[i].direction = 1;
+		_servo_configs[i].mode_pos = -1;
+	}
 
-for (i=0; i<MAX_BOARDS;i++)
-    _pwm_boards[i] = -1;
-_active_board = -1;
+	for (i=0; i<MAX_SERVOS; i++) {
+		_last_written_prop[i] = 999.0f;
+		_last_written_abs[i]  = -999999;
+	}
 
-for (i=0; i<(MAX_SERVOS);i++) {
-	// these values have not useful meaning
-	_servo_configs[i].center = -1;
-	_servo_configs[i].range = -1;
-	_servo_configs[i].direction = 1;
-	_servo_configs[i].mode_pos = -1;
-}
+	_last_servo = -1;
 
-for (i=0; i<MAX_SERVOS; i++) {
-_last_written_prop[i] = 999.0f;
-_last_written_abs[i]  = -999999;
-}
+	_active_drive.mode = MODE_UNDEFINED;
+	_active_drive.rpm = -1.0;
+	_active_drive.radius = -1.0;
+	_active_drive.track = -1.0;
+	_active_drive.scale = -1.0;
 
-
-_last_servo = -1;
-
-_active_drive.mode = MODE_UNDEFINED;
-_active_drive.rpm = -1.0;
-_active_drive.radius = -1.0;
-_active_drive.track = -1.0;
-_active_drive.scale = -1.0;
-
-
-if ((_controller_io_handle = open (filename, O_RDWR)) < 0) {
-    ROS_FATAL ("Failed to open I2C bus %s", filename);
-    return; /* exit(1) */   /* additional ERROR HANDLING information is available with 'errno' */
-}
-ROS_INFO ("I2C bus opened on %s", filename);
+	if ((_controller_io_handle = open (filename, O_RDWR)) < 0) {
+		ROS_FATAL ("Failed to open I2C bus %s", filename);
+		return; // exit(1)   /* additional ERROR HANDLING information is available with 'errno' */
+	}
+	ROS_INFO ("I2C bus opened on %s", filename);
 }
 
 // ------------------------------------------------------------------------------------------------------------------------------------
-/**
- * @brief Service to set PWM frequency
- *
- * The PWM boards drive LED and servos using pulse width modulation. The 12 bit interface means values are 0..4096.
- * The size of the minimum width is determined by the frequency. This service is needed when using a board configured other than with the default I2C address and when using multiple boards.
- *
- * If using the set_active_board() service, it must be used before using other services or topics from this package.
- *
- * Warning: Changing the frequency will affect any active servos.
- *
- * @param[in] req Int16 value for the requested pulse frequency
- * @param[out] res the return value will be the new active frequency
- * @returns true
- *
- * Example:
- * Analog RC servos are most often designed for 20ms pulses. This is achieved with a frequency of 50Hz.
- * This software defaults to 50Hz. Use the set_pwm_frequency() to change this frequency value.
- * It may be necessary or convenient to change the PWM frequency if using DC motors connected to PWM controllers.
- * It may also be convenient if using PWM to control LEDs.
- *
- * rosservice call /set_pwm_frequency "{value: 50}"
- */
 /**
 \defgroup Topics Topics with subscribers provided by this package
 @{ */
@@ -836,7 +812,7 @@ power off servo - eg 'coast' rather than 'brake'
 rostopic pub -1 /servos_absolute i2cpwm_board/ServoArray "{servos:[{servo: 1, value: 0}]}"
 \endcode
 
-/
+*/
 void servos_absolute (const i2cpwm_board::ServoArray::ConstPtr& msg)
 {
 // / this subscription works on the active_board */
@@ -958,7 +934,8 @@ drive the arm servo to its 45 degree position and then to its -45 degree positio
 rostopic pub -1 /servos_proportional i2cpwm_board/ServoArray "{servos:[{servo: 9, value: 0.50}]}"
 rostopic pub -1 /servos_proportional i2cpwm_board/ServoArray "{servos:[{servo: 9, value: -0.50}]}"
 \endcode
-/
+*/
+
 void servos_proportional (const i2cpwm_board::ServoArray::ConstPtr& msg)
 {
 / this subscription works on the active_board */
@@ -1052,10 +1029,10 @@ moving sideways to the left
 rostopic pub -1 /servos_drive geometry_msgs/Twist "{linear: [0.0, -0.2, 0.0], angular: [0.0, 0.0, 0.0]}"
 
 \endcode
-/
+*/
 void servos_drive (const geometry_msgs::Twist::ConstPtr& msg)
 {
-/ this subscription works on the active_board */
+/*this subscription works on the active_board */
 
 int i;
 float delta, range, ratio;
@@ -1216,9 +1193,15 @@ for (i=0; i<(_last_servo); i++) {
 }
 
 // ------------------------------------------------------------------------------------------------------------------------------------
-// Doxygen group and service documentation removed due to invalid C++/Doxygen syntax
-/** 
-\brief service to set PWM frequency
+/** @}/
+/ 
+\defgroup Services Services interfaces provided by this package
+@{ */
+// services
+// ------------------------------------------------------------------------------------------------------------------------------------
+
+/**
+\brief service to set set PWM frequency
 
 The PWM boards drive LED and servos using pulse width modulation. The 12 bit interface means values are 0..4096.
 The size of the minimum width is determined by the frequency. is service is needed when using a board configured other than with the default I2C address and when using multiple boards.
@@ -1295,10 +1278,10 @@ additionally configure one 180 degree servo (±90) used for a robot arm - this s
 rosservice call /config_servos "servos: [{servo: 9, center: 344, range: 376, direction: -1}]"
 
 \endcode
-/
+*/
 bool config_servos (i2cpwm_board::ServosConfig::Request &req, i2cpwm_board::ServosConfig::Response &res)
 {
-/ this service works on the active_board */
+/*this service works on the active_board */
 int i;
 
 res.error = 0;
