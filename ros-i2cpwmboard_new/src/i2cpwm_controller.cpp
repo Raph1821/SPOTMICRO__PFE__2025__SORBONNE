@@ -763,6 +763,28 @@ ROS_INFO ("I2C bus opened on %s", filename);
 
 // ------------------------------------------------------------------------------------------------------------------------------------
 /**
+ * @brief Service to set PWM frequency
+ *
+ * The PWM boards drive LED and servos using pulse width modulation. The 12 bit interface means values are 0..4096.
+ * The size of the minimum width is determined by the frequency. This service is needed when using a board configured other than with the default I2C address and when using multiple boards.
+ *
+ * If using the set_active_board() service, it must be used before using other services or topics from this package.
+ *
+ * Warning: Changing the frequency will affect any active servos.
+ *
+ * @param[in] req Int16 value for the requested pulse frequency
+ * @param[out] res the return value will be the new active frequency
+ * @returns true
+ *
+ * Example:
+ * Analog RC servos are most often designed for 20ms pulses. This is achieved with a frequency of 50Hz.
+ * This software defaults to 50Hz. Use the set_pwm_frequency() to change this frequency value.
+ * It may be necessary or convenient to change the PWM frequency if using DC motors connected to PWM controllers.
+ * It may also be convenient if using PWM to control LEDs.
+ *
+ * rosservice call /set_pwm_frequency "{value: 50}"
+ */
+/**
 \defgroup Topics Topics with subscribers provided by this package
 @{ */
 // ------------------------------------------------------------------------------------------------------------------------------------
