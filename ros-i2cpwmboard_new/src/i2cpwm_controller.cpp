@@ -1217,7 +1217,8 @@ for (i=0; i<(_last_servo); i++) {
 
 // ------------------------------------------------------------------------------------------------------------------------------------
 // Doxygen group and service documentation removed due to invalid C++/Doxygen syntax
-\brief service to set set PWM frequency
+/** 
+\brief service to set PWM frequency
 
 The PWM boards drive LED and servos using pulse width modulation. The 12 bit interface means values are 0..4096.
 The size of the minimum width is determined by the frequency. is service is needed when using a board configured other than with the default I2C address and when using multiple boards.
