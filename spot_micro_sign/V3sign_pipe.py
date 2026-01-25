@@ -3,12 +3,14 @@ import cv2
 import socket
 from sign_detector import get_sign_command, cap
 
-###################
+#if debug that away "
+###################n 
 # SOCKET SENDER
 ROBOT_IP = "172.26.52.254"   # <- CHANGE  with robot/WSL IP
 PORT = 5005 # sends at port 5005 here
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
 
 def send_to_robot(command: str):
     if command == "stand":
@@ -20,6 +22,19 @@ def send_to_robot(command: str):
 
     elif command == "walk":
         msg = "WALK"
+
+    elif command == "forward":
+        msg = "FORWARD"
+
+    elif command == "backward":
+        msg = "BACKWARD"
+
+    elif command == "left":
+        msg = "LEFT"
+
+    elif command == "right":
+        msg = "RIGHT"
+
 
     else:
         print("Unknown command:", command)
@@ -36,7 +51,11 @@ def send_to_robot(command: str):
 accumulators = {
     "stand": 0,
     "idle": 0,
-    "walk": 0
+    "walk": 0,
+    "forward": 0,
+    "backward": 0,
+    "left": 0,
+    "right": 0
 }
 
 # Parameters
@@ -52,7 +71,7 @@ def fire_sign_command():
     global last_fired, last_fire_time
 
     # Get raw gesture from sign_detector
-    command, frame = get_sign_command()
+    command, frame = get_sign_command() #ADD MODE EVENTUALLY
 
     # Cooldown: ignore new gestures for a short time
     # internal and in parallel, so the external time.sleep(x) in main will be effective for display
@@ -67,6 +86,7 @@ def fire_sign_command():
     # If no gesture detected → return nothing
     if command is None:
         return None, frame
+
 
     # Increase accumulator for detected gesture
     accumulators[command] += 2  #1 # boost for detected gesture (+2 because decay is -1 every frame)
@@ -95,6 +115,7 @@ if __name__ == "__main__":
 
     while cap.isOpened():
         command, frame = fire_sign_command()
+
         if command :
             send_to_robot(command)
             time.sleep(2) # cooldown not obligatory
