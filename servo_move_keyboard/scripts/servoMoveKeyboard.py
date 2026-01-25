@@ -83,10 +83,9 @@ class ServoConvert():
         Set Servo value
         Input: Value between 0 and 4095
         '''
-        if value_in not in range(4096):
-            print('Servo value not in range [0,4095]')
-        else:
-            self.value = value_in
+        # Clamp value_in to [0, 4095]
+        value_in = max(0, min(4095, value_in))
+        self.value = value_in
 
 
     def set_center(self,center_val):
