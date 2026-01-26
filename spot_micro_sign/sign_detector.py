@@ -181,7 +181,7 @@ def is_forward_military(landmarks):
 
 
 def is_backward_drink_thumb(landmarks):
-    # this works well because all fingers are seen + palm by mediapip e
+    # this works well because all fingers are seen + palm by mediapipe
     # 1. All fingers folded (index, middle, ring, pinky)
     index_fold  = landmarks[8].y  > landmarks[6].y
     middle_fold = landmarks[12].y > landmarks[10].y
