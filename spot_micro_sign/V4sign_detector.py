@@ -137,7 +137,7 @@ def index_direction(landmarks):
     dy = landmarks[8].y - landmarks[5].y
 
     if abs(dx) > abs(dy):
-        return "right_rotate" if dx > 0 else "left_rotate"
+        return "rotate_right" if dx > 0 else "rotate_left"
     """# if we want index pointing on those direction (PS : backward is clumsy)
     else:
         return "backward" if dy > 0 else "forward"
