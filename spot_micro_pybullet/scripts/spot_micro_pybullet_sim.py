@@ -374,172 +374,252 @@ class SpotMicroPyBulletSim:
             basePosition=[-room_size/2, 0, wall_height/2]
         )
         
-        # Add various obstacles
-        # Minimum obstacle height: 0.4m (above lidar height ~0.24m when robot is standing)
-        # Lidar is at base_link (0.155m) + lidar_z_pos (0.085m) = ~0.24m
-        # Use 0.4m to ensure all obstacles are clearly detectable by lidar
-        min_obstacle_height = 0.4  # Ensure all obstacles are detectable by lidar
+        # # Add various obstacles
+        # # Minimum obstacle height: 0.4m (above lidar height ~0.24m when robot is standing)
+        # # Lidar is at base_link (0.155m) + lidar_z_pos (0.085m) = ~0.24m
+        # # Use 0.4m to ensure all obstacles are clearly detectable by lidar
+        # min_obstacle_height = 0.4  # Ensure all obstacles are detectable by lidar
         
-        # Robot dimensions for spacing calculations
-        robot_width = 0.15  # Robot width (from footprint: 0.15m total)
-        min_passage_width = robot_width * 1.5  # Minimum passage width: 0.225m
-        box_half_size = 0.3  # Box half-extent (total width: 0.6m)
-        cylinder_radius = 0.15  # Cylinder radius (total width: 0.3m)
+        # # Robot dimensions for spacing calculations
+        # robot_width = 0.15  # Robot width (from footprint: 0.15m total)
+        # min_passage_width = robot_width * 2.0 # Minimum passage width: 0.225m
+        # box_half_size = 0.3  # Box half-extent (total width: 0.6m)
+        # cylinder_radius = 0.15  # Cylinder radius (total width: 0.3m)
         
-        # Minimum distance between obstacle centers = obstacle_size + min_passage_width
-        min_box_spacing = box_half_size * 2 + min_passage_width  # 0.6 + 0.225 = 0.825m
-        min_cylinder_spacing = cylinder_radius * 2 + min_passage_width  # 0.3 + 0.225 = 0.525m
+        # # Minimum distance between obstacle centers = obstacle_size + min_passage_width
+        # min_box_spacing = box_half_size * 2 + min_passage_width  # 0.6 + 0.225 = 0.825m
+        # min_cylinder_spacing = cylinder_radius * 2 + min_passage_width  # 0.3 + 0.225 = 0.525m
         
-        # 1. Box obstacles (like furniture)
-        # Positions spaced to ensure at least min_passage_width between obstacles
-        box_positions = [
-            [1.2, 1.2, min_obstacle_height],   # Corner obstacle (top-right, orange box)
-            [-1.5, 0.8, min_obstacle_height],  # Medium box (left side) - moved further
-            [0.8, -1.5, min_obstacle_height + 0.1],  # Tall box (bottom-right) - moved further
-        ]
-        
-        for i, pos in enumerate(box_positions):
-            height = pos[2]
-            box_shape = p.createCollisionShape(
-                p.GEOM_BOX,
-                halfExtents=[box_half_size, box_half_size, height]
-            )
-            box_visual = p.createVisualShape(
-                p.GEOM_BOX,
-                halfExtents=[box_half_size, box_half_size, height],
-                rgbaColor=[0.7, 0.4, 0.2, 1.0]
-            )
-            p.createMultiBody(
-                baseMass=0,
-                baseCollisionShapeIndex=box_shape,
-                baseVisualShapeIndex=box_visual,
-                basePosition=[pos[0], pos[1], height]
-            )
-        
-        # 2. Cylindrical obstacles (like pillars or trash cans)
-        # Positions spaced to ensure at least min_passage_width between obstacles
-        cylinder_positions = [
-            [-1.0, -1.2, max(0.4, min_obstacle_height)],  # Moved further
-            [1.5, -0.8, max(0.3, min_obstacle_height)],   # Moved further
-        ]
-        
-        for pos in cylinder_positions:
-            height = pos[2]
-            cyl_shape = p.createCollisionShape(
-                p.GEOM_CYLINDER,
-                radius=cylinder_radius,
-                height=height*2
-            )
-            cyl_visual = p.createVisualShape(
-                p.GEOM_CYLINDER,
-                radius=cylinder_radius,
-                length=height*2,
-                rgbaColor=[0.5, 0.5, 0.5, 1.0]
-            )
-            p.createMultiBody(
-                baseMass=0,
-                baseCollisionShapeIndex=cyl_shape,
-                baseVisualShapeIndex=cyl_visual,
-                basePosition=[pos[0], pos[1], height]
-            )
-        
-        # 3. Sphere obstacles (like balls or rounded objects) - REMOVED
-        # Spheres were causing confusion, replaced with taller box obstacles
-        # If you want to add sphere obstacles back, uncomment below and ensure radius >= min_obstacle_height
-        # sphere_positions = [
-        #     [0.0, 1.5, min_obstacle_height],
-        #     [-0.5, -0.5, min_obstacle_height],
+        # # 1. Box obstacles (like furniture)
+        # # Positions spaced to ensure at least min_passage_width between obstacles
+        # box_positions = [
+        #     [1.2, 1.2, min_obstacle_height],   # Corner obstacle (top-right, orange box)
+        #     [-1.5, 0.8, min_obstacle_height],  # Medium box (left side) - moved further
+        #     [0.8, -1.5, min_obstacle_height + 0.1],  # Tall box (bottom-right) - moved further
         # ]
-        # 
-        # for pos in sphere_positions:
-        #     radius = min_obstacle_height  # Ensure sphere extends above lidar height
-        #     sphere_shape = p.createCollisionShape(
-        #         p.GEOM_SPHERE,
-        #         radius=radius
+        
+        # for i, pos in enumerate(box_positions):
+        #     height = pos[2]
+        #     box_shape = p.createCollisionShape(
+        #         p.GEOM_BOX,
+        #         halfExtents=[box_half_size, box_half_size, height]
         #     )
-        #     sphere_visual = p.createVisualShape(
-        #         p.GEOM_SPHERE,
-        #         radius=radius,
-        #         rgbaColor=[0.8, 0.2, 0.2, 1.0]
+        #     box_visual = p.createVisualShape(
+        #         p.GEOM_BOX,
+        #         halfExtents=[box_half_size, box_half_size, height],
+        #         rgbaColor=[0.7, 0.4, 0.2, 1.0]
         #     )
         #     p.createMultiBody(
         #         baseMass=0,
-        #         baseCollisionShapeIndex=sphere_shape,
-        #         baseVisualShapeIndex=sphere_visual,
-        #         basePosition=[pos[0], pos[1], radius]  # Position at radius height
+        #         baseCollisionShapeIndex=box_shape,
+        #         baseVisualShapeIndex=box_visual,
+        #         basePosition=[pos[0], pos[1], height]
         #     )
         
-        # 4. Create a passage (two boxes forming a corridor)
-        # Ensure passage width is at least 1.5x robot width
-        passage_box_half_x = 0.2  # Box half-extent in X direction
-        passage_box_half_y = 0.8  # Box half-extent in Y direction
-        passage_height = min_obstacle_height
+        # # 2. Cylindrical obstacles (like pillars or trash cans)
+        # # Positions spaced to ensure at least min_passage_width between obstacles
+        # cylinder_positions = [
+        #     [-1.0, -1.2, max(0.4, min_obstacle_height)],  # Moved further
+        #     [1.5, -0.8, max(0.3, min_obstacle_height)],   # Moved further
+        # ]
         
-        # Calculate passage width: distance between boxes - box widths
-        # passage_width = (right_pos - left_pos) - (2 * passage_box_half_x)
-        # We want: passage_width >= min_passage_width
-        # So: (right_pos - left_pos) >= min_passage_width + 2 * passage_box_half_x
-        #     = 0.225 + 0.4 = 0.625m
-        passage_center_gap = min_passage_width + 2 * passage_box_half_x  # 0.225 + 0.4 = 0.625m
-        passage_left_x = -0.5
-        passage_right_x = passage_left_x + passage_center_gap  # -0.5 + 0.625 = 0.125
+        # for pos in cylinder_positions:
+        #     height = pos[2]
+        #     cyl_shape = p.createCollisionShape(
+        #         p.GEOM_CYLINDER,
+        #         radius=cylinder_radius,
+        #         height=height*2
+        #     )
+        #     cyl_visual = p.createVisualShape(
+        #         p.GEOM_CYLINDER,
+        #         radius=cylinder_radius,
+        #         length=height*2,
+        #         rgbaColor=[0.5, 0.5, 0.5, 1.0]
+        #     )
+        #     p.createMultiBody(
+        #         baseMass=0,
+        #         baseCollisionShapeIndex=cyl_shape,
+        #         baseVisualShapeIndex=cyl_visual,
+        #         basePosition=[pos[0], pos[1], height]
+        #     )
         
-        passage_box_shape = p.createCollisionShape(
+        # # 3. Sphere obstacles (like balls or rounded objects) - REMOVED
+        # # Spheres were causing confusion, replaced with taller box obstacles
+        # # If you want to add sphere obstacles back, uncomment below and ensure radius >= min_obstacle_height
+        # # sphere_positions = [
+        # #     [0.0, 1.5, min_obstacle_height],
+        # #     [-0.5, -0.5, min_obstacle_height],
+        # # ]
+        # # 
+        # # for pos in sphere_positions:
+        # #     radius = min_obstacle_height  # Ensure sphere extends above lidar height
+        # #     sphere_shape = p.createCollisionShape(
+        # #         p.GEOM_SPHERE,
+        # #         radius=radius
+        # #     )
+        # #     sphere_visual = p.createVisualShape(
+        # #         p.GEOM_SPHERE,
+        # #         radius=radius,
+        # #         rgbaColor=[0.8, 0.2, 0.2, 1.0]
+        # #     )
+        # #     p.createMultiBody(
+        # #         baseMass=0,
+        # #         baseCollisionShapeIndex=sphere_shape,
+        # #         baseVisualShapeIndex=sphere_visual,
+        # #         basePosition=[pos[0], pos[1], radius]  # Position at radius height
+        # #     )
+        
+        # # 4. Create a passage (two boxes forming a corridor)
+        # # Ensure passage width is at least 1.5x robot width
+        # passage_box_half_x = 0.2  # Box half-extent in X direction
+        # passage_box_half_y = 0.8  # Box half-extent in Y direction
+        # passage_height = min_obstacle_height
+        
+        # # Calculate passage width: distance between boxes - box widths
+        # # passage_width = (right_pos - left_pos) - (2 * passage_box_half_x)
+        # # We want: passage_width >= min_passage_width
+        # # So: (right_pos - left_pos) >= min_passage_width + 2 * passage_box_half_x
+        # #     = 0.225 + 0.4 = 0.625m
+        # passage_center_gap = min_passage_width + 2 * passage_box_half_x  # 0.225 + 0.4 = 0.625m
+        # passage_left_x = -0.5
+        # passage_right_x = passage_left_x + passage_center_gap  # -0.5 + 0.625 = 0.125
+        
+        # passage_box_shape = p.createCollisionShape(
+        #     p.GEOM_BOX,
+        #     halfExtents=[passage_box_half_x, passage_box_half_y, passage_height]
+        # )
+        # passage_box_visual = p.createVisualShape(
+        #     p.GEOM_BOX,
+        #     halfExtents=[passage_box_half_x, passage_box_half_y, passage_height],
+        #     rgbaColor=[0.4, 0.4, 0.6, 1.0]
+        # )
+        
+        # # Left side of passage
+        # p.createMultiBody(
+        #     baseMass=0,
+        #     baseCollisionShapeIndex=passage_box_shape,
+        #     baseVisualShapeIndex=passage_box_visual,
+        #     basePosition=[passage_left_x, 0.0, passage_height]
+        # )
+        
+        # # Right side of passage
+        # p.createMultiBody(
+        #     baseMass=0,
+        #     baseCollisionShapeIndex=passage_box_shape,
+        #     baseVisualShapeIndex=passage_box_visual,
+        #     basePosition=[passage_right_x, 0.0, passage_height]
+        # )
+        
+        # actual_passage_width = passage_center_gap - 2 * passage_box_half_x
+        # rospy.loginfo(f"Passage created: width={actual_passage_width:.3f}m (min required: {min_passage_width:.3f}m)")
+        
+        # # 5. Optional: Add a ramp for testing climbing
+        # ramp_length = 1.0
+        # ramp_width = 0.6
+        # ramp_angle = 15 * (3.14159 / 180)  # 15 degrees
+        
+        # ramp_shape = p.createCollisionShape(
+        #     p.GEOM_BOX,
+        #     halfExtents=[ramp_length/2, ramp_width/2, 0.05]
+        # )
+        # ramp_visual = p.createVisualShape(
+        #     p.GEOM_BOX,
+        #     halfExtents=[ramp_length/2, ramp_width/2, 0.05],
+        #     rgbaColor=[0.6, 0.6, 0.3, 1.0]
+        # )
+        
+        # ramp_orientation = p.getQuaternionFromEuler([0, ramp_angle, 0])
+        # p.createMultiBody(
+        #     baseMass=0,
+        #     baseCollisionShapeIndex=ramp_shape,
+        #     baseVisualShapeIndex=ramp_visual,
+        #     basePosition=[2.0, 1.5, 0.2],
+        #     baseOrientation=ramp_orientation
+        # )
+
+        # Simple corner obstacles
+        min_obstacle_height = 0.5  # Tall enough to be detected by lidar
+        
+        # BIG BOX - Top Right corner
+        box_size = 0.5  # Large box (1.0m x 1.0m)
+        box_shape_tr = p.createCollisionShape(
             p.GEOM_BOX,
-            halfExtents=[passage_box_half_x, passage_box_half_y, passage_height]
+            halfExtents=[box_size, box_size, min_obstacle_height]
         )
-        passage_box_visual = p.createVisualShape(
+        box_visual_tr = p.createVisualShape(
             p.GEOM_BOX,
-            halfExtents=[passage_box_half_x, passage_box_half_y, passage_height],
-            rgbaColor=[0.4, 0.4, 0.6, 1.0]
+            halfExtents=[box_size, box_size, min_obstacle_height],
+            rgbaColor=[0.9, 0.5, 0.2, 1.0]  # Orange
         )
-        
-        # Left side of passage
         p.createMultiBody(
             baseMass=0,
-            baseCollisionShapeIndex=passage_box_shape,
-            baseVisualShapeIndex=passage_box_visual,
-            basePosition=[passage_left_x, 0.0, passage_height]
+            baseCollisionShapeIndex=box_shape_tr,
+            baseVisualShapeIndex=box_visual_tr,
+            basePosition=[1.0, 1.0, min_obstacle_height]  # Top right
         )
         
-        # Right side of passage
+        # BIG BOX - Bottom Left corner
+        box_shape_bl = p.createCollisionShape(
+            p.GEOM_BOX,
+            halfExtents=[box_size, box_size, min_obstacle_height]
+        )
+        box_visual_bl = p.createVisualShape(
+            p.GEOM_BOX,
+            halfExtents=[box_size, box_size, min_obstacle_height],
+            rgbaColor=[0.9, 0.5, 0.2, 1.0]  # Orange
+        )
         p.createMultiBody(
             baseMass=0,
-            baseCollisionShapeIndex=passage_box_shape,
-            baseVisualShapeIndex=passage_box_visual,
-            basePosition=[passage_right_x, 0.0, passage_height]
+            baseCollisionShapeIndex=box_shape_bl,
+            baseVisualShapeIndex=box_visual_bl,
+            basePosition=[-1.0, -1.0, min_obstacle_height]  # Bottom left
         )
         
-        actual_passage_width = passage_center_gap - 2 * passage_box_half_x
-        rospy.loginfo(f"Passage created: width={actual_passage_width:.3f}m (min required: {min_passage_width:.3f}m)")
-        
-        # 5. Optional: Add a ramp for testing climbing
-        ramp_length = 1.0
-        ramp_width = 0.6
-        ramp_angle = 15 * (3.14159 / 180)  # 15 degrees
-        
-        ramp_shape = p.createCollisionShape(
-            p.GEOM_BOX,
-            halfExtents=[ramp_length/2, ramp_width/2, 0.05]
+        # BIG CYLINDER - Top Left corner
+        cylinder_radius = 0.4  # Large cylinder (0.8m diameter)
+        cyl_shape_tl = p.createCollisionShape(
+            p.GEOM_CYLINDER,
+            radius=cylinder_radius,
+            height=min_obstacle_height * 2
         )
-        ramp_visual = p.createVisualShape(
-            p.GEOM_BOX,
-            halfExtents=[ramp_length/2, ramp_width/2, 0.05],
-            rgbaColor=[0.6, 0.6, 0.3, 1.0]
+        cyl_visual_tl = p.createVisualShape(
+            p.GEOM_CYLINDER,
+            radius=cylinder_radius,
+            length=min_obstacle_height * 2,
+            rgbaColor=[0.3, 0.6, 0.9, 1.0]  # Blue
         )
-        
-        ramp_orientation = p.getQuaternionFromEuler([0, ramp_angle, 0])
         p.createMultiBody(
             baseMass=0,
-            baseCollisionShapeIndex=ramp_shape,
-            baseVisualShapeIndex=ramp_visual,
-            basePosition=[2.0, 1.5, 0.2],
-            baseOrientation=ramp_orientation
+            baseCollisionShapeIndex=cyl_shape_tl,
+            baseVisualShapeIndex=cyl_visual_tl,
+            basePosition=[-1.0, 1.0, min_obstacle_height]  # Top left
         )
+        
+        # BIG CYLINDER - Bottom Right corner
+        cyl_shape_br = p.createCollisionShape(
+            p.GEOM_CYLINDER,
+            radius=cylinder_radius,
+            height=min_obstacle_height * 2
+        )
+        cyl_visual_br = p.createVisualShape(
+            p.GEOM_CYLINDER,
+            radius=cylinder_radius,
+            length=min_obstacle_height * 2,
+            rgbaColor=[0.3, 0.6, 0.9, 1.0]  # Blue
+        )
+        p.createMultiBody(
+            baseMass=0,
+            baseCollisionShapeIndex=cyl_shape_br,
+            baseVisualShapeIndex=cyl_visual_br,
+            basePosition=[1.0, -1.0, min_obstacle_height]  # Bottom right
+        )
+
+
+
         
         rospy.loginfo("Test environment created successfully!")
         rospy.loginfo(f"Room size: {room_size}x{room_size}m")
-        rospy.loginfo(f"Obstacles added: {len(box_positions)} boxes, {len(cylinder_positions)} cylinders")
+        # rospy.loginfo(f"Obstacles added: {len(box_positions)} boxes, {len(cylinder_positions)} cylinders")
         rospy.loginfo(f"Minimum obstacle height: {min_obstacle_height}m (above lidar height ~0.24m)")
     
     def _get_lidar_link_index(self):
