@@ -11,7 +11,6 @@ ANGLE_VAL = 3 # for angular value change incrementally
 ANGLE_RAD = radians(ANGLE_VAL)
 
 
-
 def main():
     rospy.init_node("sign_publisher_node")
 
@@ -51,21 +50,25 @@ def main():
         elif msg == "FORWARD":
             current_twist.linear.x += VEL_VAL
             pub_vel.publish(current_twist)
+            rospy.loginfo(f"Received: {msg, current_twist}")
             print(msg, current_twist) # debug
 
         elif msg == "BACKWARD":
             current_twist.linear.x -= VEL_VAL
             pub_vel.publish(current_twist)
-            print(msg, current_twist) # debug
+            rospy.loginfo(f"Received: {msg, current_twist}")
+            print(msg, current_twist)  # debug
 
         elif msg == "ROTATE_LEFT":
             current_twist.angular.z += ANGLE_RAD
             pub_vel.publish(current_twist)
+            rospy.loginfo(f"Received: {msg, current_twist}")
             print(msg, current_twist)  # debug
 
         elif msg == "ROTATE_RIGHT":
             current_twist.angular.z -= ANGLE_RAD
             pub_vel.publish(current_twist)
+            rospy.loginfo(f"Received: {msg, current_twist}")
             print(msg, current_twist)  # debug
 
         elif msg.startswith("VEL"):
@@ -75,7 +78,8 @@ def main():
                 current_twist.linear.y = float(parts[2])
                 current_twist.angular.z = float(parts[3])
                 pub_vel.publish(current_twist)
-                print(msg, current_twist)
+                rospy.loginfo(f"Received: {msg, current_twist}")
+                print(msg, current_twist)  # debug
 
 
 

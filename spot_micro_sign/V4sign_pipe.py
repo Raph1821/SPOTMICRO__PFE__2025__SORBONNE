@@ -4,17 +4,13 @@ import socket
 from V4sign_detector import get_sign_command, cap
 
 #if debug that away "
-###################n 
+###################n
 # SOCKET SENDER
 ROBOT_IP = "172.26.52.254"   # <- CHANGE  with robot/WSL IP
 PORT = 5005 # sends at port 5005 here
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-
-
-INCREMENTAL = ['left', 'right', 'forward', 'backward']
-ADDUP = 15
 
 def send_to_robot(command: str):
     if command == "stand":
@@ -33,11 +29,11 @@ def send_to_robot(command: str):
     elif command == "backward":
         msg = "BACKWARD"
 
-    elif command == "left":
-        msg = "LEFT"
+    elif command == "rotate_left":
+        msg = "ROTATE_LEFT"
 
-    elif command == "right":
-        msg = "RIGHT"
+    elif command == "rotate_right":
+        msg = "ROTATE_RIGHT"
 
 
     else:
@@ -51,6 +47,10 @@ def send_to_robot(command: str):
 ####################
 # BIOINSPIRED SAMPLER WRAPPER FOR sign_detector
 
+
+INCREMENT = ["forward", "backward", "rotate_left", "rotate_right"]
+ADDUP = 10
+
 # Neuron-like accumulators
 accumulators = {
     "stand": 0,
@@ -58,8 +58,8 @@ accumulators = {
     "walk": 0,
     "forward": 0,
     "backward": 0,
-    "left": 0,
-    "right": 0
+    "rotate_left": 0,
+    "rotate_right": 0
 }
 
 # Parameters
@@ -97,11 +97,12 @@ def fire_sign_command():
     print(accumulators[command]) #debug accumulation
 
     # Check if any accumulator crosses threshold
+    # After updating accumulators elsewhere...
+
+    # Check if any accumulator crosses the threshold and fire (unless it's the last fired)
     for gesture, value in accumulators.items():
         if value >= THRESHOLD and gesture != last_fired:
-            # FIRE the gesture
-            print(f"[FIRE]{gesture.upper()}") # (acc={value})")
-
+            print(f"[FIRE]{gesture.upper()}")  # (acc={value})
             last_fired = gesture
             last_fire_time = time.time()
 
@@ -110,20 +111,12 @@ def fire_sign_command():
                 accumulators[k] = 0
 
             return gesture, frame
-        elif (gesture in INCREMENTAL) and gesture == last_fired and value >= THRESHOLD:
-            if (value - THRESHOLD) % ADDUP == 0:
-                print('ADDING UP')
-                if gesture == "forward":
-                    return "FORWARD", frame
 
-                elif gesture == "backward":
-                    return "BACKWARD", frame
-
-                elif gesture == "left":
-                    return "ROTATE_LEFT", frame
-
-                elif gesture == "right":
-                    return "ROTATE_RIGHT", frame
+    # Handle special case when the same command is being incremented.
+    if command in INCREMENT and command == last_fired and accumulators.get(command, 0) != 0:
+        if accumulators[command] % ADDUP == 0:
+            print(f"[FIRE]{command.upper()}")  # (acc={value})
+            time.sleep(2)
 
     return None, frame
 
