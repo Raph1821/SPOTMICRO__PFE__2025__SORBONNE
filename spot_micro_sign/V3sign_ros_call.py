@@ -12,7 +12,7 @@ def main():
 
     rospy.loginfo("SignPublisherNode started. Recieving info")
 
-    # socket Receiver ---
+    # socket Receiver
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(("0.0.0.0", 5005)) # Listens at port 5005 here
 
