@@ -1,0 +1,11 @@
+A	.idea/.gitignore
+A	.idea/SPOTMICRO__PFE__2025__SORBONNE.iml
+A	.idea/inspectionProfiles/profiles_settings.xml
+A	.idea/misc.xml
+A	.idea/modules.xml
+A	.idea/vcs.xml
+M	spot_micro_sign/V3sign_ros_call.py
+D	spot_micro_sign/V4sign_detector.py
+D	spot_micro_sign/V4sign_pipe.py
+D	spot_micro_sign/V4sign_ros_call.py
+M	spot_micro_sign/sign_detector.py
