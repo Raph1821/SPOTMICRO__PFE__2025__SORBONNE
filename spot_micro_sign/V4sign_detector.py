@@ -107,7 +107,7 @@ def is_thumbpose(landmarks):
 
     return thumb_extended and fingers_closed
 
-
+"""
 def thumb_direction(landmarks):
     dx = landmarks[4].x - landmarks[2].x
     dy = landmarks[4].y - landmarks[2].y
@@ -116,7 +116,7 @@ def thumb_direction(landmarks):
         return "right" if dx > 0 else "left"
     else:
         return "backward" if dy > 0 else "forward"
-
+"""
 
 
 def is_index_pointing(landmarks):
@@ -137,7 +137,7 @@ def index_direction(landmarks):
     dy = landmarks[8].y - landmarks[5].y
 
     if abs(dx) > abs(dy):
-        return "right" if dx > 0 else "left"
+        return "right_rotate" if dx > 0 else "left_rotate"
     """# if we want index pointing on those direction (PS : backward is clumsy)
     else:
         return "backward" if dy > 0 else "forward"
