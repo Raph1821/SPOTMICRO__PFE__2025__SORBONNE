@@ -5,9 +5,10 @@ from std_msgs.msg import Bool
 from geometry_msgs.msg import Twist
 from math import radians
 
+ADDUP = 10
 
-VEL_VAL = 0.020 #for velocity value change incrementally
-ANGLE_VAL = 3 # for angular value change incrementally
+VEL_VAL = 0.020 / ADDUP #for velocity value change incrementally
+ANGLE_VAL = 3 / ADDUP # for angular value change incrementally
 ANGLE_RAD = radians(ANGLE_VAL)
 
 
@@ -50,14 +51,14 @@ def main():
             pub_idle.publish(True)
 
         elif msg == "FORWARD":
-            current_twist.linear.x += VEL_VAL
+            current_twist.linear.x += VEL_VAL // ADDUP
             pub_vel.publish(current_twist)
             print("DEBUG TWIST:", current_twist)
             rospy.loginfo(f"Received: {msg, current_twist}")
             print(msg, current_twist) # debug
 
         elif msg == "BACKWARD":
-            current_twist.linear.x -= VEL_VAL
+            current_twist.linear.x -= VEL_VAL // ADDUP
             pub_vel.publish(current_twist)
             rospy.loginfo(f"Received: {msg, current_twist}")
             print(msg, current_twist)  # debug
