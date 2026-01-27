@@ -87,18 +87,6 @@ roslaunch spot_micro_autonomous_slam simple_exploration.launch \
   rviz:=true
 ```
 
-### Real Robot Mode
-
-```bash
-# Terminal 1: Start autonomous SLAM
-roslaunch spot_micro_autonomous_slam autonomous_slam.launch \
-  use_pybullet:=false \
-  auto_explore:=false \
-  use_rviz:=true
-
-# Terminal 2 (optional): Launch path planner for manual goals
-rosrun spot_micro_autonomous_slam path_planner.py
-```
 
 ### Real Robot Mode
 ```bash
@@ -116,15 +104,6 @@ rosrun spot_micro_autonomous_slam path_planner.py
 ```
 
 ## Configuration
-
-### Main Parameters (autonomous_slam.launch)
-
-```xml
-<arg name="use_pybullet" default="false"/>        <!-- Use simulation -->
-<arg name="auto_explore" default="false"/>         <!-- Start auto-exploration -->
-<arg name="exploration_timeout" value="600"/>      <!-- Timeout in seconds -->
-<arg name="map_save_dir" default="~/spot_micro_maps"/>
-```
 
 ### Hybrid Explorer Parameters
 
@@ -786,4 +765,5 @@ Apache License 2.0 - Same as parent Spot Micro project
 
 
 For detailed usage instructions, see [USAGE_GUIDE.md](USAGE_GUIDE.md)
+
 
