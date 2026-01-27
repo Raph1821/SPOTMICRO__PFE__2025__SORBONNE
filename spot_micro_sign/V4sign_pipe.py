@@ -116,7 +116,8 @@ def fire_sign_command():
     if command in INCREMENT and command == last_fired and accumulators.get(command, 0) != 0:
         if accumulators[command] % ADDUP == 0:
             print(f"[FIRE]{command.upper()}")  # (acc={value})
-            time.sleep(2)
+            #time.sleep(2)
+            return command, frame
 
     return None, frame
 
