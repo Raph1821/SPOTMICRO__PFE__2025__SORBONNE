@@ -33,6 +33,7 @@ def main():
         data, addr = sock.recvfrom(1024)
         msg = data.decode().strip()
 
+        print("RAW:", repr(msg))
         rospy.loginfo(f"Received: {msg}")
 
         if msg == "WALK":
@@ -42,6 +43,7 @@ def main():
             pub_stand.publish(True)
             # Reset velocities when standing or it will resume last values and problems
             current_twist = Twist()
+            print("DEBUG TWIST:", current_twist)
             pub_vel.publish(current_twist)
 
         elif msg == "IDLE":
@@ -50,6 +52,7 @@ def main():
         elif msg == "FORWARD":
             current_twist.linear.x += VEL_VAL
             pub_vel.publish(current_twist)
+            print("DEBUG TWIST:", current_twist)
             rospy.loginfo(f"Received: {msg, current_twist}")
             print(msg, current_twist) # debug
 
