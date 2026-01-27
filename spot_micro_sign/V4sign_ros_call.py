@@ -6,7 +6,7 @@ from geometry_msgs.msg import Twist
 from math import radians
 
 
-VEL_VAL = 0.20 #for velocity value change incrementally
+VEL_VAL = 0.020 #for velocity value change incrementally
 ANGLE_VAL = 3 # for angular value change incrementally
 ANGLE_RAD = radians(ANGLE_VAL)
 
