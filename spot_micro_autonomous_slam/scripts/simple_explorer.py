@@ -28,12 +28,12 @@ class HybridExplorer:
         
         # Frontier parameters
         self.frontier_min_size = 5
-        self.max_exploration_distance = 3.0
-        self.goal_reached_threshold = 0.3  # Consider goal reached when within 30cm
+        self.max_exploration_distance = 4.0
+        self.goal_reached_threshold = 0.2  # Consider goal reached when within 30cm
         
         # Goal-directed navigation parameters
         self.angle_tolerance = 0.3  # ~17 degrees - acceptable heading error
-        self.goal_weight = 0.7  # How much to weight goal direction vs obstacle avoidance
+        self.goal_weight = 0.65  # How much to weight goal direction vs obstacle avoidance
         
         # State
         self.laser_scan = None
@@ -64,6 +64,12 @@ class HybridExplorer:
         # TF
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
+        
+        # Wall following state
+        self.wall_following_mode = False
+        self.wall_follow_start_time = None
+        self.wall_follow_max_duration = 10.0  # Follow wall for max 10 seconds
+        self.stuck_counter = 0
         
         rospy.loginfo("Hybrid Explorer initialized")
         
@@ -198,13 +204,19 @@ class HybridExplorer:
             if grid[centroid_y, centroid_x] == 100:
                 continue
             
+            score = (
+                0.6 * (1.0 / distance) +
+                0.3 * (len(region_cells) / 50.0)
+            )
+
             frontiers.append({
                 'position': (wx, wy),
                 'size': len(region_cells),
-                'distance': distance
+                'distance': distance,
+                'score': score
             })
         
-        frontiers.sort(key=lambda f: f['distance'])
+        frontiers.sort(key=lambda f: f['score'], reverse=True)
         return frontiers
     
     def get_angle_to_goal(self):
@@ -303,18 +315,18 @@ class HybridExplorer:
         
         # If obstacle avoidance agrees with goal direction, use it
         if preferred_direction == obstacle_direction:
-            rospy.loginfo_throttle(2.0, f"✓ Turning toward goal (angle_err={math.degrees(angle_to_goal):.1f}°)")
+            rospy.loginfo_throttle(2.0, f"Turning toward goal (angle_err={math.degrees(angle_to_goal):.1f}°)")
             return preferred_direction
         
         # Conflict: goal wants one direction, obstacles want another
         # Weight them: 70% goal, 30% obstacles
         if abs(angle_to_goal) > math.pi / 3:  # >60 degrees off
             # Goal is far off to the side, prioritize it more
-            rospy.loginfo_throttle(2.0, f"⚠ Large angle to goal ({math.degrees(angle_to_goal):.1f}°), prioritizing goal direction")
+            rospy.loginfo_throttle(2.0, f"Large angle to goal ({math.degrees(angle_to_goal):.1f}°), prioritizing goal direction")
             return preferred_direction
         else:
             # Goal is somewhat aligned, consider obstacles more
-            rospy.loginfo_throttle(2.0, f"⚡ Obstacle conflict, using obstacle direction")
+            rospy.loginfo_throttle(2.0, f"Obstacle conflict, using obstacle direction")
             return obstacle_direction
     
     def find_best_direction_obstacles(self):
@@ -402,7 +414,7 @@ class HybridExplorer:
         
         # Check if goal is reached
         if self.is_goal_reached():
-            rospy.loginfo("✓ Goal reached! Finding new frontier...")
+            rospy.loginfo("Goal reached! Finding new frontier...")
             self.current_goal = None
             cmd.linear.x = 0.0
             cmd.angular.z = 0.0
@@ -442,6 +454,116 @@ class HybridExplorer:
         
         return cmd
     
+
+
+    def check_if_stuck(self, obstacle_ahead):
+        """Detect if robot is stuck in a loop"""
+        if obstacle_ahead:
+            self.stuck_counter += 1
+            rospy.loginfo_throttle(1.0, f"Stuck counter: {self.stuck_counter}")
+        else:
+            self.stuck_counter = 0
+
+        if self.stuck_counter > 12:
+            if not self.wall_following_mode:
+                rospy.logwarn("STUCK! Entering wall-following mode")
+                self.wall_following_mode = True
+                self.wall_follow_start_time = rospy.Time.now()
+            self.stuck_counter = 0
+
+    def wall_follow_control(self):
+        """
+        Follow the wall on the right side to navigate around obstacles
+        Uses averaged sensor readings for robustness
+        """
+        if self.laser_scan is None:
+            return Twist()
+        
+        ranges = np.array(self.laser_scan.ranges)
+        num_readings = len(ranges)
+        angle_min = self.laser_scan.angle_min
+        angle_increment = self.laser_scan.angle_increment
+        
+        # Get AVERAGE distances from multiple readings for robustness
+        
+        # Right side: -60° to -120° (wider arc)
+        right_start_angle = -math.pi / 3  # -60 degrees
+        right_end_angle = -2 * math.pi / 3  # -120 degrees
+        right_start_idx = int((right_start_angle - angle_min) / angle_increment)
+        right_end_idx = int((right_end_angle - angle_min) / angle_increment)
+        right_start_idx = max(0, min(right_start_idx, num_readings - 1))
+        right_end_idx = max(0, min(right_end_idx, num_readings - 1))
+        
+        if right_start_idx > right_end_idx:
+            right_ranges = ranges[right_end_idx:right_start_idx+1]
+        else:
+            right_ranges = ranges[right_start_idx:right_end_idx+1]
+        
+        # Filter out invalid readings and only keep those < 2m (actual obstacles)
+        right_ranges = right_ranges[np.isfinite(right_ranges) & (right_ranges < 2.0)]
+        
+        # Front: -30° to +30°
+        front_start_angle = -math.pi / 6
+        front_end_angle = math.pi / 6
+        front_start_idx = int((front_start_angle - angle_min) / angle_increment)
+        front_end_idx = int((front_end_angle - angle_min) / angle_increment)
+        front_start_idx = max(0, min(front_start_idx, num_readings - 1))
+        front_end_idx = max(0, min(front_end_idx, num_readings - 1))
+        front_ranges = ranges[front_start_idx:front_end_idx+1]
+        front_ranges = front_ranges[np.isfinite(front_ranges)]
+        
+        # Calculate distances
+        if len(right_ranges) > 0:
+            right_distance = np.min(right_ranges)  # Use minimum for safety
+            right_avg = np.mean(right_ranges)
+        else:
+            right_distance = float('inf')
+            right_avg = float('inf')
+        
+        if len(front_ranges) > 0:
+            front_distance = np.min(front_ranges)
+        else:
+            front_distance = float('inf')
+        
+        # Wall following parameters
+        desired_wall_distance = 0.35  # Stay 35cm from wall (closer is more reliable)
+        
+        cmd = Twist()
+        
+        # Priority 1: Obstacle directly ahead - turn left away from wall
+        if front_distance < self.obstacle_distance:
+            cmd.angular.z = self.max_turn_speed
+            cmd.linear.x = 0.0
+            rospy.loginfo_throttle(1.0, f"Wall-follow: Obstacle ahead ({front_distance:.2f}m), turning left")
+        
+        # Priority 2: No wall detected on right - turn right to find it
+        elif right_distance > 1.5 or len(right_ranges) == 0:
+            cmd.angular.z = -self.max_turn_speed * 0.4
+            cmd.linear.x = self.max_forward_speed * 0.6
+            rospy.loginfo_throttle(1.0, f"Wall-follow: No wall detected, turning right")
+        
+        # Priority 3: Too close to wall - turn left
+        elif right_distance < desired_wall_distance * 0.8:
+            cmd.angular.z = self.max_turn_speed * 0.6
+            cmd.linear.x = self.max_forward_speed * 0.4
+            rospy.loginfo_throttle(1.0, f"Wall-follow: Too close ({right_distance:.2f}m < {desired_wall_distance*0.8:.2f}m)")
+        
+        # Priority 4: Too far from wall - turn right
+        elif right_distance > desired_wall_distance * 1.5:
+            cmd.angular.z = -self.max_turn_speed * 0.4
+            cmd.linear.x = self.max_forward_speed * 0.6
+            rospy.loginfo_throttle(1.0, f"Wall-follow: Too far ({right_distance:.2f}m > {desired_wall_distance*1.5:.2f}m)")
+        
+        # Priority 5: Good distance - go straight
+        else:
+            cmd.angular.z = 0.0
+            cmd.linear.x = self.max_forward_speed
+            rospy.loginfo_throttle(1.0, f"Wall-follow: Good distance ({right_distance:.2f}m)")
+        
+        return cmd
+
+
+
     def run(self):
         """Main loop - GOAL-DIRECTED reactive navigation"""
         rate = rospy.Rate(10)
@@ -461,7 +583,7 @@ class HybridExplorer:
                 frontiers = self.find_frontiers()
                 if frontiers:
                     self.current_goal = frontiers[0]['position']
-                    rospy.loginfo(f"🎯 New frontier goal: ({self.current_goal[0]:.2f}, {self.current_goal[1]:.2f}), dist={frontiers[0]['distance']:.2f}m")
+                    rospy.loginfo(f"New frontier goal: ({self.current_goal[0]:.2f}, {self.current_goal[1]:.2f}), dist={frontiers[0]['distance']:.2f}m")
                 else:
                     rospy.loginfo("No frontiers found, continuing exploration")
                 last_frontier_check = rospy.Time.now()
@@ -486,7 +608,20 @@ class HybridExplorer:
             
             # Check for obstacles
             obstacle_ahead = self.check_obstacle_ahead()
-            
+            self.check_if_stuck(obstacle_ahead)
+
+            if self.wall_following_mode:
+                # Check if wall-follow duration exceeded
+                if (rospy.Time.now() - self.wall_follow_start_time).to_sec() > self.wall_follow_max_duration:
+                    rospy.loginfo("Wall-following timeout, returning to normal navigation")
+                    self.wall_following_mode = False
+                else:
+                    cmd = self.wall_follow_control()
+                    self.cmd_vel_pub.publish(cmd)
+                    rate.sleep()
+                    continue
+
+
             if obstacle_ahead or self.is_turning:
                 # OBSTACLE AVOIDANCE MODE (with goal-awareness)
                 if not self.is_turning:
@@ -504,7 +639,7 @@ class HybridExplorer:
                         turn_angle = self.turn_angle * 1.5
                     
                     self.turn_duration = abs(turn_angle / self.max_turn_speed)
-                    rospy.loginfo(f"⚠ Obstacle - turning {'right' if turn_direction > 0 else 'left'}")
+                    rospy.loginfo(f"Obstacle - turning {'right' if turn_direction > 0 else 'left'}")
                 
                 elapsed = (rospy.Time.now() - self.turn_start_time).to_sec()
                 if elapsed < self.turn_duration:
@@ -521,6 +656,8 @@ class HybridExplorer:
                 self.is_turning = False
                 self.consecutive_turns = 0
             
+
+
             self.cmd_vel_pub.publish(cmd)
             rate.sleep()
 
