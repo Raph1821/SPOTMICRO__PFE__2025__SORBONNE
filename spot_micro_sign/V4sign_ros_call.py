@@ -24,13 +24,20 @@ def main():
     # socket Receiver
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(("0.0.0.0", 5005)) # Listens at port 5005 here
-
+    sock.settimeout(0.5)  # prevents blocking forever
 
     # Keeping track of current velocity state
     current_twist = Twist()
 
     while not rospy.is_shutdown():
-        data, addr = sock.recvfrom(1024)
+        try:
+            data, addr = sock.recvfrom(1024)
+        except socket.timeout:
+            continue  # loop again, check rospy.is_shutdown() cf settimeout
+
+        msg = data.decode().strip()
+        ...
+
         msg = data.decode().strip()
 
         print("RAW:", repr(msg))

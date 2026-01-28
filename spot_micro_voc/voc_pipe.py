@@ -2,6 +2,7 @@ import time
 import socket
 from voc_detector import ecouter_commandes  # nouveau module vocal
 
+
 '''
     USE sign_ros_call.py VARIANT TO CONVERT INFO INTO ROS COMMAND, SHARED PIPELINE FILE
 
@@ -10,7 +11,6 @@ from voc_detector import ecouter_commandes  # nouveau module vocal
 
 ###################
 # SOCKET SENDER
-###################
 ROBOT_IP = "172.26.52.254"   # <- CHANGE avec l’IP du robot/WSL
 PORT = 5005
 
@@ -56,6 +56,7 @@ if __name__ == "__main__":
         command = ecouter_commandes()
 
         if command:
+            print(command)
             send_to_robot(command)
 
         time.sleep(0.1)
