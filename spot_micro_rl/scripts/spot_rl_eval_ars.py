@@ -61,7 +61,7 @@ def evaluate(args):
     )
     
     # Load trained policy
-    agent.load(args.model_path)
+    agent.load_policy(args.model_path)
     print("✓ Model loaded successfully")
     
     print("\n" + "=" * 60)
