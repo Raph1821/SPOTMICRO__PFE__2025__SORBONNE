@@ -33,10 +33,8 @@ def main():
         try:
             data, addr = sock.recvfrom(1024)
         except socket.timeout:
+            rospy.sleep(0.01)  # essential for Ctrl-C to work
             continue  # loop again, check rospy.is_shutdown() cf settimeout
-
-        msg = data.decode().strip()
-        ...
 
         msg = data.decode().strip()
 
@@ -45,6 +43,8 @@ def main():
 
         if msg == "WALK":
             pub_walk.publish(True)
+            rospy.loginfo(f"DEBUG TWIST: {current_twist}")
+
 
         elif msg == "STAND":
             pub_stand.publish(True)
