@@ -47,7 +47,7 @@ def evaluate(args):
         state_dim=config['state_dim'],
         action_dim=config['action_dim'],
         num_deltas=config['num_deltas'],
-        step_size=config['step_size'],
+        learning_rate=config['learning_rate'],
         delta_std=config['delta_std'],
         num_best_deltas=config.get('num_best_deltas', 16),
         num_workers=1,  # No parallelization for evaluation
