@@ -8,6 +8,10 @@ import argparse
 import numpy as np
 import pickle
 
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
+
 from spot_micro_rl.ars import ARSAgent
 from spot_micro_rl.spot_env import make_env
 
