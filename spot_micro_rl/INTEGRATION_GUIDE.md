@@ -685,13 +685,15 @@ python scripts/gmbc_data.py  # Analyse survival data
 
 ### Scénario 4: Workflow Post-Entraînement
 
-**Objectif:** Évaluer, visualiser et déployer le modèle entraîné
+**Objectif :** Évaluer, visualiser et tester le modèle entraîné
 
-#### Étape 1: Identifier le meilleur checkpoint
+
+#### Étape 1 : Identifier le meilleur checkpoint (**SAC et TD3 uniquement**)
 
 ```bash
+# Pour SAC et TD3 :
 # Les checkpoints sont sauvegardés dans models/checkpoints/
-# Format: {algo}_episode_{num}.pth ou {algo}_best.pkl
+# Format : {algo}_episode_{num}.pth ou {algo}_best.pth
 
 # Vérifier les logs pour trouver le meilleur épisode
 import pandas as pd
@@ -703,36 +705,40 @@ print(f"Meilleur checkpoint: episode {best_episode}")
 best_checkpoint = "models/checkpoints/spot_sac_best.pth"
 ```
 
-#### Étape 2: Évaluer la policy (avec visualisation)
+> **Remarque ARS :** Cette étape n'est pas nécessaire pour ARS. Les checkpoints "best" sont générés automatiquement et portent un nom explicite, par exemple :
+> models/checkpoints/spot_ars_20260123_113820_seed42_best (Cherchez la valeur la plus grande du deuxième chiffre)
+
+
+#### Étape 2 : Évaluation rapide (visualisation, ARS uniquement)
+
+```bash
+# ARS uniquement (visualisation PyBullet)
+# Remplacer le nom du fichier par le checkpoint "best" généré, par exemple :
+python scripts/spot_rl_eval.py models/checkpoints/spot_ars_20260123_113820_seed42_best --render --num_episodes 10
+```
+
+#### Étape 3 : Test quantitatif et robuste (tous algorithmes)
 
 ```bash
 # ARS
-python scripts/spot_rl_eval.py \
-    --policy_path models/checkpoints/spot_ars_best.pkl \
-    --algorithm ars \
-    --num_episodes 10 \
-    --render  # Active la visualisation PyBullet GUI
+python scripts/spot_rl_test.py --policy models/checkpoints/spot_ars_20260123_113820_seed42_best --algorithm ars
 
 # SAC
-python scripts/spot_rl_eval.py \
-    --policy_path models/checkpoints/sac_best.pth \
-    --algorithm sac \
-    --num_episodes 10 \
-    --render \
-    --terrain rough  # Tester sur terrain difficile
+python scripts/spot_rl_test.py --policy models/checkpoints/spot_sac_best.pth --algorithm sac --cuda
 
 # TD3
-python scripts/spot_rl_eval.py \
-    --policy_path models/checkpoints/td3_best.pth \
-    --algorithm td3 \
-    --num_episodes 10 \
-    --render
+python scripts/spot_rl_test.py --policy models/checkpoints/td3_best.pth --algorithm td3 --cuda
 ```
 
-**Ce que vous verrez:**
-- Fenêtre PyBullet 3D avec le robot qui marche
-- Logs console avec récompenses et statistiques
-- Métriques de performance (vitesse, stabilité, survie)
+**Remarques :**
+- `spot_rl_eval.py` ne gère que ARS (pas SAC/TD3, pas d'argument --algorithm).
+- `spot_rl_test.py` permet de tester ARS, SAC et TD3 sur plusieurs terrains et seeds, mais sans visualisation PyBullet.
+- Pour SAC et TD3, la validation périodique est intégrée dans les scripts d’entraînement (`spot_rl_train_sac_parallel.py`, `spot_rl_train_td3_parallel.py`) via la fonction `evaluate_policy`.
+- Les résultats de validation sont enregistrés dans les logs CSV (`results/training_logs/`).
+
+**Ce que vous verrez :**
+- Avec `spot_rl_eval.py` (ARS) : fenêtre PyBullet 3D, logs console, récompenses par épisode.
+- Avec `spot_rl_test.py` : statistiques détaillées (reward, survie, robustesse) pour tous les algorithmes, sauvegardées en JSON.
 
 #### Étape 3: Analyser les performances
 

@@ -40,6 +40,25 @@ from .motor import MotorModel
 from .spot_env_randomizer import SpotEnvRandomizer
 from .heightfield import HeightField
 
+def make_env(render=False, use_ros=False, max_timesteps=1000, urdf_path=None, **kwargs):
+    """
+    Factory pour créer un SpotMicroEnv avec les paramètres courants.
+    Args:
+        render (bool): Afficher PyBullet GUI
+        use_ros (bool): Activer interface ROS
+        max_timesteps (int): Longueur max épisode
+        urdf_path (str): Chemin URDF custom (optionnel)
+        kwargs: Autres paramètres avancés
+    Returns:
+        SpotMicroEnv
+    """
+    return SpotMicroEnv(
+        urdf_path=urdf_path,
+        render=render,
+        max_timesteps=max_timesteps,
+        use_ros=use_ros,
+        **kwargs
+    )
 
 class SpotMicroEnv(gym.Env):
     """Environnement Gym pour SpotMicro avec PyBullet et support ROS optionnel.
