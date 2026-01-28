@@ -48,11 +48,10 @@ include_directories(
 
 # Install Python scripts
 catkin_install_python(PROGRAMS
-  scripts/autonomous_explorer.py
-  scripts/frontier_exploration_client.py
   scripts/map_saver.py
   scripts/odom_publisher.py
   scripts/simple_explorer.py
+  scripts/path_planner.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
