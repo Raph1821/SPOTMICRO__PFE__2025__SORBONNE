@@ -8,8 +8,8 @@ import argparse
 import numpy as np
 import pickle
 
-from spot_micro_rl.ars import ARSAgent
-from spot_micro_rl.spot_env import make_env
+from src.spot_micro_rl.ars import ARSAgent
+from src.spot_micro_rl.spot_env import make_env
 
 
 def evaluate(args):
