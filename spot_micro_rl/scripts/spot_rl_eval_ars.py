@@ -46,13 +46,11 @@ def evaluate(args):
     agent = ARSAgent(
         state_dim=config['state_dim'],
         action_dim=config['action_dim'],
-        num_deltas=config['num_deltas'],
         learning_rate=config['learning_rate'],
-        delta_std=0.02,  # valeur par défaut
+        num_deltas=config['num_deltas'],
         num_best_deltas=config['num_best_deltas'],
-        num_workers=1,  # No parallelization for evaluation
-        rollout_length=config.get('max_timesteps', args.rollout_length),
-        shift=0.0,
+        episode_steps=config.get('max_timesteps', args.rollout_length),
+        expl_noise=config.get('expl_noise', 0.01),
         seed=config['seed']
     )
     
