@@ -714,7 +714,7 @@ best_checkpoint = "models/checkpoints/spot_sac_best.pth"
 ```bash
 # ARS uniquement (visualisation PyBullet)
 # Remplacer le nom du fichier par le checkpoint "best" généré, par exemple :
-python scripts/spot_rl_eval.py models/checkpoints/spot_ars_20260123_113820_seed42_best --render --num_episodes 10
+python scripts/spot_rl_eval_ars.py models/checkpoints/spot_ars_20260123_113820_seed42_best --render --num_episodes 10
 ```
 
 #### Étape 3 : Test quantitatif et robuste (tous algorithmes)
