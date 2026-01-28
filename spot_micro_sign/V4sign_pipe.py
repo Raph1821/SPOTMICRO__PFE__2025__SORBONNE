@@ -41,7 +41,7 @@ def send_to_robot(command: str):
         return
 
     sock.sendto(msg.encode(), (ROBOT_IP, PORT))
-    print(f"[SENT] {msg} → {ROBOT_IP}:{PORT}")
+    print(f"[SENT] {msg} -> {ROBOT_IP}:{PORT}")
 
 
 ####################
@@ -87,7 +87,7 @@ def fire_sign_command():
     for key in accumulators:
         accumulators[key] = max(0, accumulators[key] - DECAY)
 
-    # If no gesture detected → return nothing
+    # If no gesture detected -> return nothing
     if command is None:
         return None, frame
 

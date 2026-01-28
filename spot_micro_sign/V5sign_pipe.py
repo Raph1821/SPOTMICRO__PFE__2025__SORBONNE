@@ -1,7 +1,8 @@
 import time
 import cv2
 import socket
-from V4sign_detector import get_sign_command, cap
+#from V4sign_detector import get_sign_command, cap
+from V5_camera_sign_detector import get_sign_command, cap
 from robot_responses import robot_reply
 from robot_tts import speak
 

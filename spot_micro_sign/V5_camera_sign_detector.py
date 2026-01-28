@@ -5,9 +5,15 @@ from mediapipe.tasks.python import vision
 import threading
 from flask import Flask, Response
 
-USE_PHONE_CAMERA = True  # or False
+###############################################
+USE_PHONE_CAMERA = True #########True#########
+###############################################
 
-PHONE_STREAM_URL = "http://192.168.1.42:8080/video"  # example
+########################################################
+PHONE_STREAM_URL =  "http://admin:vanre@10.206.39.22:8081/video" #http:// admin : admin password : vanre @port/video  # example
+########################################################
+
+
 
 if USE_PHONE_CAMERA:
     cap = cv2.VideoCapture(PHONE_STREAM_URL)
@@ -22,8 +28,13 @@ if USE_PHONE_CAMERA:
         while True:
             if latest_frame is None:
                 continue
-            ret, jpeg = cv2.imencode('.jpg', latest_frame)
+
+            flipped = cv2.flip(frame, 1) # flipping happens here before encoding
+            ret, jpeg = cv2.imencode('.jpg', flipped)
             frame = jpeg.tobytes()
+
+
+
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
@@ -35,7 +46,7 @@ if USE_PHONE_CAMERA:
 
 
     def start_server():
-        app.run(host="0.0.0.0", port=9090, debug=False, threaded=True)
+        app.run(host="0.0.0.0", port=8080, debug=False, threaded=True)
 
 
     # Start server in background
@@ -47,13 +58,12 @@ if USE_PHONE_CAMERA:
 
 
 else:
+
+
+
+
     cap = cv2.VideoCapture(0)
 
-
-
-# selecting MODE in prevision of way of command
-IMPULSE = False
-ADDUP = True
 
 # Load the HandLandmarker
 base_options = python.BaseOptions(model_asset_path='task_models_for_mediapipe/hand_landmarker.task')
@@ -314,10 +324,11 @@ def get_sign_command():
 
 
 # debug
+"""
 #MAIN
 # Main loop to continuously detect hand signs
 while cap.isOpened():
-    command, frame, mode = get_sign_command()
+    command, frame = get_sign_command()
     if command == "forward":
         print("Hand sign detected: forward")
 
@@ -330,3 +341,4 @@ while cap.isOpened():
 # Release resources
 cap.release()
 cv2.destroyAllWindows()
+"""

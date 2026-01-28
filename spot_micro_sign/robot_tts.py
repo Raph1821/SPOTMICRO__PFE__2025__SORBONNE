@@ -3,9 +3,8 @@ import pyttsx3
 
 engine = pyttsx3.init()
 
-# Configure la voix française si disponible
 for voice in engine.getProperty('voices'):
-    if "fr" in voice.languages or "French" in voice.name:
+    if "fr" in voice.languages or "French" in voice.name: # french, change for other language
         engine.setProperty('voice', voice.id)
         break
 
