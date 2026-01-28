@@ -28,69 +28,70 @@ def main():
 
     # Keeping track of current velocity state
     current_twist = Twist()
+    rate = rospy.Rate(100)
 
     while not rospy.is_shutdown():
+
         try:
             data, addr = sock.recvfrom(1024)
         except socket.timeout:
-            rospy.sleep(0.01)  # essential for Ctrl-C to work
-            continue  # loop again, check rospy.is_shutdown() cf settimeout
+            data = None
 
-        msg = data.decode().strip()
+        if data:
+            msg = data.decode().strip()
+            rospy.loginfo(f"Received: {msg}")
 
-        print("RAW:", repr(msg))
-        rospy.loginfo(f"Received: {msg}")
-
-        if msg == "WALK":
-            pub_walk.publish(True)
-            rospy.loginfo(f"DEBUG TWIST: {current_twist}")
+            if msg == "WALK":
+                pub_walk.publish(True)
+                rospy.loginfo(f"DEBUG TWIST: {current_twist}")
 
 
-        elif msg == "STAND":
-            pub_stand.publish(True)
-            # Reset velocities when standing or it will resume last values and problems
-            current_twist = Twist()
-            print("DEBUG TWIST:", current_twist)
-            pub_vel.publish(current_twist)
+            elif msg == "STAND":
+                pub_stand.publish(True)
+                # Reset velocities when standing or it will resume last values and problems
+                current_twist = Twist()
+                print("DEBUG TWIST:", current_twist)
+                pub_vel.publish(current_twist)
 
-        elif msg == "IDLE":
-            pub_idle.publish(True)
+            elif msg == "IDLE":
+                pub_idle.publish(True)
 
-        elif msg == "FORWARD":
-            current_twist.linear.x += VEL_VAL  # Simply add the incremental value
-            pub_vel.publish(current_twist)
-            print("DEBUG TWIST:", current_twist)
-            rospy.loginfo(f"Received: {msg, current_twist}")
-            print(msg, current_twist)  # debug
+            elif msg == "FORWARD":
+                current_twist.linear.x += VEL_VAL  # Simply add the incremental value
+                pub_vel.publish(current_twist)
+                print("DEBUG TWIST:", current_twist)
+                rospy.loginfo(f"Received: {msg, current_twist}")
+                print(msg, current_twist)  # debug
 
-        elif msg == "BACKWARD":
-            current_twist.linear.x -= VEL_VAL  # Simply subtract the incremental value
-            pub_vel.publish(current_twist)
-            rospy.loginfo(f"Received: {msg, current_twist}")
-            print(msg, current_twist)  # debug
-
-        elif msg == "ROTATE_LEFT":
-            current_twist.angular.z += ANGLE_RAD
-            pub_vel.publish(current_twist)
-            rospy.loginfo(f"Received: {msg, current_twist}")
-            print(msg, current_twist)  # debug
-
-        elif msg == "ROTATE_RIGHT":
-            current_twist.angular.z -= ANGLE_RAD
-            pub_vel.publish(current_twist)
-            rospy.loginfo(f"Received: {msg, current_twist}")
-            print(msg, current_twist)  # debug
-
-        elif msg.startswith("VEL"):
-            parts = msg.split()
-            if len(parts) == 4:
-                current_twist.linear.x = float(parts[1])
-                current_twist.linear.y = float(parts[2])
-                current_twist.angular.z = float(parts[3])
+            elif msg == "BACKWARD":
+                current_twist.linear.x -= VEL_VAL  # Simply subtract the incremental value
                 pub_vel.publish(current_twist)
                 rospy.loginfo(f"Received: {msg, current_twist}")
                 print(msg, current_twist)  # debug
 
+            elif msg == "ROTATE_LEFT":
+                current_twist.angular.z += ANGLE_RAD
+                pub_vel.publish(current_twist)
+                rospy.loginfo(f"Received: {msg, current_twist}")
+                print(msg, current_twist)  # debug
+
+            elif msg == "ROTATE_RIGHT":
+                current_twist.angular.z -= ANGLE_RAD
+                pub_vel.publish(current_twist)
+                rospy.loginfo(f"Received: {msg, current_twist}")
+                print(msg, current_twist)  # debug
+
+            elif msg.startswith("VEL"):
+                parts = msg.split()
+                if len(parts) == 4:
+                    current_twist.linear.x = float(parts[1])
+                    current_twist.linear.y = float(parts[2])
+                    current_twist.angular.z = float(parts[3])
+                    pub_vel.publish(current_twist)
+                    rospy.loginfo(f"Received: {msg, current_twist}")
+                    print(msg, current_twist)  # debug
+        # ALWAYS yield to ROS
+        rate.sleep()
 
 
 if __name__ == "__main__":
