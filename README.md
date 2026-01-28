@@ -7,8 +7,9 @@
 This repository represents an enhanced version of the Spot Micro Quadruped project, developed as a Sorbonne University End of Studies Project (PFE). We have added several advanced functionalities to the original codebase while maintaining backward compatibility with existing features.
 
 <p align="center">
-  <img src="assets/spot_king.jpg" width="27%" />
-  <img src="assets/spot_jardin.jpg" width="48%" />
+  <img src="assets/spot_king.jpg" width="23%" />
+  <img src="assets/spot_jardin.jpg" width="41%" />
+  <img src="assets/sim.png" width="33%" />
 </p>
 
 ### New Features Added (PFE 2025)
