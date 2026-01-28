@@ -6,6 +6,12 @@
 
 This repository represents an enhanced version of the Spot Micro Quadruped project, developed as a Sorbonne University End of Studies Project (PFE). We have added several advanced functionalities to the original codebase while maintaining backward compatibility with existing features.
 
+<p align="center">
+  <img src="assets/spot_king.jpg" width="23%" />
+  <img src="assets/spot_jardin.jpg" width="41%" />
+  <img src="assets/sim.png" width="33%" />
+</p>
+
 ### New Features Added (PFE 2025)
 - **PyBullet Simulation**: Full physics-based simulation environment for testing and development without physical hardware
 - **Autonomous Exploration & Path Planning**: Frontier-based exploration with automatic goal generation and navigation (Work in Progress)
