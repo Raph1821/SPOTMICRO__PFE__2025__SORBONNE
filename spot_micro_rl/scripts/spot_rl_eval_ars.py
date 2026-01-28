@@ -12,7 +12,7 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
-from spot_micro_rl.ars import ARSAgent
+from spot_micro_rl.ars import ARSAgent, Normalizer, Policy
 from spot_micro_rl.spot_env import make_env
 
 
@@ -43,7 +43,8 @@ def evaluate(args):
     
     # Create agent
     print(f"\nCreating agent...")
-    agent = ARSAgent(
+    normalizer = Normalizer(config['state_dim'])
+    policy = Policy(
         state_dim=config['state_dim'],
         action_dim=config['action_dim'],
         learning_rate=config['learning_rate'],
@@ -52,6 +53,11 @@ def evaluate(args):
         episode_steps=config.get('max_timesteps', args.rollout_length),
         expl_noise=config.get('expl_noise', 0.01),
         seed=config['seed']
+    )
+    agent = ARSAgent(
+        normalizer=normalizer,
+        policy=policy,
+        env=env
     )
     
     # Load trained policy
