@@ -25,7 +25,7 @@ catkin_install_python(PROGRAMS
   scripts/spot_rl_train_td3.py
   scripts/spot_rl_train_sac_parallel.py
   scripts/spot_rl_train_td3_parallel.py
-  scripts/spot_rl_eval.py
+  scripts/spot_rl_eval_ars.py
   scripts/spot_rl_deploy.py
   scripts/gmbc_data.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
