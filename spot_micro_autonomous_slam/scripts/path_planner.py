@@ -21,8 +21,8 @@ class PathPlanner:
         rospy.init_node("path_planner")
 
         # Parameters
-        self.max_forward_speed = rospy.get_param("~max_forward_speed", 0.35)
-        self.max_turn_speed = rospy.get_param("~max_turn_speed", 0.45)
+        self.max_forward_speed = rospy.get_param("~max_forward_speed", 0.30)
+        self.max_turn_speed = rospy.get_param("~max_turn_speed", 0.50)
         self.goal_threshold = rospy.get_param("~goal_threshold", 0.3)
         self.obstacle_distance = rospy.get_param("~obstacle_distance", 0.4)
         self.turn_angle = rospy.get_param("~turn_angle", math.pi / 2)
@@ -187,6 +187,10 @@ class PathPlanner:
         robot_x, robot_y, robot_yaw = robot_pose
         goal_x, goal_y = self.current_goal
         
+        robot_yaw += math.pi
+        robot_yaw = math.atan2(math.sin(robot_yaw), math.cos(robot_yaw))
+
+
         # Calculate angle to goal
         dx = goal_x - robot_x
         dy = goal_y - robot_y
@@ -306,7 +310,7 @@ class PathPlanner:
             # Adjust angular velocity to point toward goal
             angular_cmd = max(-self.max_turn_speed, 
                             min(self.max_turn_speed, 
-                                angle_to_goal * 1.5))  # Proportional control
+                                -angle_to_goal * 1.5))  # Proportional control
             
             # Move forward while turning (unless angle is very large)
             if abs(angle_to_goal) > math.pi / 2:  # >90 degrees
@@ -566,7 +570,7 @@ class PathPlanner:
                 
                 elapsed = (rospy.Time.now() - self.turn_start_time).to_sec()
                 if elapsed < self.turn_duration:
-                    cmd.angular.z = self.max_turn_speed * self.turn_direction
+                    cmd.angular.z = -self.max_turn_speed * self.turn_direction
                     cmd.linear.x = 0.0
                 else:
                     self.is_turning = False
