@@ -80,7 +80,7 @@ last_fire_time = 0
 
 # label for return frames
 def put_label(frame, text):
-    cv2.putText(frame, text, (380, 460),
+    cv2.putText(frame, text, (30, 120),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 1.5, (0, 0, 255), 3, cv2.LINE_AA)
 

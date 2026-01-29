@@ -4,8 +4,8 @@ import threading
 from flask import Flask, Response
 
 ###############################################
-USE_PHONE_CAMERA = True
-PHONE_STREAM_URL =  "http://admin:vanre@192.168.43.28:8081/video"
+USE_PHONE_CAMERA = False
+PHONE_STREAM_URL =  "http://admin:vanre@192.168.43.28:8081/video" # check this from time to time because it changes
 ###############################################
 
 # Shared objects

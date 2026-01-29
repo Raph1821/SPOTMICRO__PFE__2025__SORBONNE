@@ -144,12 +144,11 @@ def index_direction(landmarks):
 
     if abs(dx) > abs(dy):
         return "rotate_right" if dx > 0 else "rotate_left"
-
-    return None
     """# if we want index pointing on those direction (PS : backward is clumsy)
     else:
         return "backward" if dy > 0 else "forward"
     """
+    return "forward"
 
 def is_two_fingers_parallel(landmarks):
     # Index + middle extended

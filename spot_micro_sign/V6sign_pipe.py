@@ -3,6 +3,10 @@ import time
 import socket
 import cv2
 
+from robot_responses import robot_reply
+from robot_tts import speak
+
+
 import V6camera_stream          # gives us cap + latest_frame + Flask server
 from V6sign_detector import get_sign_command
 
@@ -53,6 +57,16 @@ COOLDOWN_TIME = 2
 
 last_fired = None
 last_fire_time = 0
+
+
+
+# label for return frames
+def put_label(frame, text):
+    cv2.putText(frame, text, (30, 120),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1.5, (0, 0, 255), 3, cv2.LINE_AA)
+
+
 
 
 def fire_sign_command():
@@ -109,7 +123,17 @@ if __name__ == "__main__":
         # Send to robot if fired
         if command:
             send_to_robot(command)
-            # robot_reply(command), speak(reply) can be added here
+            if command:
+                send_to_robot(command)
+                put_label(frame, "Sending...")
+                cv2.imshow('Hand Sign Detection', frame)
+
+                ### voc chatbot
+                reply = robot_reply(command)
+                print("🤖 Spotmini :", reply)
+                speak(reply)
+                ###
+
 
         # Local display
         cv2.imshow("Hand Sign Detection", frame)
