@@ -182,7 +182,7 @@ class HybridExplorer:
         if robot_pose is None:
             return []
         
-        robot_x, robot_y, _ = robot_pose
+        robot_x, robot_y, robot_yaw = robot_pose
         
         for region_id in range(1, num_regions + 1):
             region_cells = np.argwhere(labeled_frontiers == region_id)
@@ -204,9 +204,21 @@ class HybridExplorer:
             if grid[centroid_y, centroid_x] == 100:
                 continue
             
+            # Calculate angle to frontier relative to robot's heading
+            dx = wx - robot_x
+            dy = wy - robot_y
+            angle_to_frontier = math.atan2(dy, dx)
+            angle_diff = angle_to_frontier - robot_yaw
+            # Normalize to [-pi, pi]
+            angle_diff = math.atan2(math.sin(angle_diff), math.cos(angle_diff))
+            
+            # Angular score: 1.0 if straight ahead (0°), 0.5 if 90°, 0.0 if behind (180°)
+            angular_score = (math.cos(angle_diff) + 1.0) / 2.0
+            
             score = (
-                0.6 * (1.0 / distance) +
-                0.3 * (len(region_cells) / 50.0)
+                0.2 * (1.0 / distance) +               # Closer is better
+                0.4 * (len(region_cells) / 50.0) +     # Larger frontiers are better
+                0.4 * angular_score                     # Frontiers ahead are better
             )
 
             frontiers.append({
