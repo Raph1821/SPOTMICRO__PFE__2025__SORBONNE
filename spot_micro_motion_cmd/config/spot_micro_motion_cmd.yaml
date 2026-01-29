@@ -27,7 +27,7 @@ RB_3: {num: 4,  center: 306,range: 383.2,direction:  1, center_angle_deg:  50.38
 RB_2: {num: 5,  center: 306,range: 427.2,direction:  1, center_angle_deg: -74.55}
 RB_1: {num: 6,  center: 306,range: 377.7,direction:  1, center_angle_deg:  -38.88}
 LB_3: {num: 7,  center: 306,range: 396,direction:  1, center_angle_deg: -63.75}
-LB_2: {num: 8,  center: 306,range: 434.5,direction:  1, center_angle_deg:  59.62}
+LB_2: {num: 8,  center: 306,range: 427.2,direction:  1, center_angle_deg:  60.64}
 LB_1: {num: 9,  center: 306,range: 396,direction: -1, center_angle_deg:  -11.67}
 LF_3: {num: 10, center: 306,range: 391.3,direction:  1, center_angle_deg: -61.88}
 LF_2: {num: 11, center: 306,range: 419.8,direction:  1, center_angle_deg:  52.27}
