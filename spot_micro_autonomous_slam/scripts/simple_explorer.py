@@ -184,6 +184,7 @@ class HybridExplorer:
         
         robot_x, robot_y, robot_yaw = robot_pose
         
+        
         for region_id in range(1, num_regions + 1):
             region_cells = np.argwhere(labeled_frontiers == region_id)
             if len(region_cells) < self.frontier_min_size:
@@ -249,7 +250,7 @@ class HybridExplorer:
         angle_to_goal = math.atan2(dy, dx)
         
         # Calculate angle error (normalize to [-pi, pi])
-        angle_error = angle_to_goal - robot_yaw
+        angle_error = angle_to_goal - (robot_yaw + math.pi)
         angle_error = math.atan2(math.sin(angle_error), math.cos(angle_error))
         
         return angle_error
@@ -383,9 +384,9 @@ class HybridExplorer:
             return self.last_turn_direction
         
         if left_avg > right_avg * 1.1:
-            return -1.0
-        elif right_avg > left_avg * 1.1:
             return 1.0
+        elif right_avg > left_avg * 1.1:
+            return -1.0
         else:
             return self.last_turn_direction
     
@@ -440,7 +441,7 @@ class HybridExplorer:
             # But limit it to avoid spinning in place
             angular_cmd = max(-self.max_turn_speed, 
                             min(self.max_turn_speed, 
-                                angle_to_goal * 1.5))  # Proportional control
+                                -angle_to_goal * 1.5))  # Proportional control
             
             # Move forward while turning (unless angle is very large)
             if abs(angle_to_goal) > math.pi / 2:  # >90 degrees
@@ -550,19 +551,19 @@ class HybridExplorer:
         
         # Priority 2: No wall detected on right - turn right to find it
         elif right_distance > 1.5 or len(right_ranges) == 0:
-            cmd.angular.z = -self.max_turn_speed * 0.4
+            cmd.angular.z = self.max_turn_speed * 0.4
             cmd.linear.x = self.max_forward_speed * 0.6
             rospy.loginfo_throttle(1.0, f"Wall-follow: No wall detected, turning right")
         
         # Priority 3: Too close to wall - turn left
         elif right_distance < desired_wall_distance * 0.8:
-            cmd.angular.z = self.max_turn_speed * 0.6
+            cmd.angular.z = -self.max_turn_speed * 0.6
             cmd.linear.x = self.max_forward_speed * 0.4
             rospy.loginfo_throttle(1.0, f"Wall-follow: Too close ({right_distance:.2f}m < {desired_wall_distance*0.8:.2f}m)")
         
         # Priority 4: Too far from wall - turn right
         elif right_distance > desired_wall_distance * 1.5:
-            cmd.angular.z = -self.max_turn_speed * 0.4
+            cmd.angular.z = self.max_turn_speed * 0.4
             cmd.linear.x = self.max_forward_speed * 0.6
             rospy.loginfo_throttle(1.0, f"Wall-follow: Too far ({right_distance:.2f}m > {desired_wall_distance*1.5:.2f}m)")
         
