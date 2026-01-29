@@ -4,8 +4,8 @@ import threading
 from flask import Flask, Response
 
 ###############################################
-USE_PHONE_CAMERA = False
-PHONE_STREAM_URL = "http://admin:vanre@10.206.39.22:8081/video"
+USE_PHONE_CAMERA = True
+PHONE_STREAM_URL =  "http://admin:vanre@192.168.43.28:8081/video"
 ###############################################
 
 # Shared objects
@@ -29,9 +29,9 @@ def mjpeg_stream():
             continue
 
         # Optional flip for phone viewing
-        processed = cv2.flip(latest_frame, 1)
+        #processed = cv2.flip(latest_frame, 1)
 
-        ret, jpeg = cv2.imencode('.jpg', processed)
+        ret, jpeg = cv2.imencode('.jpg', latest_frame)
         frame_bytes = jpeg.tobytes()
 
         yield (b'--frame\r\n'

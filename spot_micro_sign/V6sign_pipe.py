@@ -58,7 +58,7 @@ last_fire_time = 0
 def fire_sign_command():
     global last_fired, last_fire_time
 
-    command, frame = get_sign_command(camera_stream.cap)
+    command, frame = get_sign_command(V6camera_stream.cap)
 
     if frame is None:
         return None, None
@@ -96,7 +96,7 @@ def fire_sign_command():
 if __name__ == "__main__":
     print("Running sign_pipe.py test loop... Press ESC to exit.")
 
-    while camera_stream.cap.isOpened():
+    while V6camera_stream.cap.isOpened():
         command, frame = fire_sign_command()
 
         if frame is None:
@@ -104,7 +104,7 @@ if __name__ == "__main__":
             continue
 
         # Update MJPEG stream
-        camera_stream.latest_frame = frame.copy()
+        V6camera_stream.latest_frame = frame.copy()
 
         # Send to robot if fired
         if command:
@@ -117,5 +117,5 @@ if __name__ == "__main__":
         if cv2.waitKey(5) & 0xFF == 27:
             break
 
-    camera_stream.cap.release()
+    V6camera_stream.cap.release()
     cv2.destroyAllWindows()

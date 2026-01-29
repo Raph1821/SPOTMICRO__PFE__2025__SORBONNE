@@ -6,11 +6,11 @@ import threading
 from flask import Flask, Response
 
 ###############################################
-USE_PHONE_CAMERA = False #########True#########|
+USE_PHONE_CAMERA = True #########True#########|
 ###############################################
 
 ########################################################
-PHONE_STREAM_URL =  "http://admin:vanre@10.206.39.22:8081/video" #http:// admin : admin password : vanre @port/video  # example
+PHONE_STREAM_URL =  "http://admin:vanre@192.168.43.28:8081/video" #http:// admin : admin password : vanre @port/video  # example
 ########################################################
 
 latest_frame = None
@@ -59,7 +59,7 @@ if USE_PHONE_CAMERA:
         app.run(host="0.0.0.0", port=8080, debug=False, threaded=True)
 
 
-    # Start flask server in background
+    # Start server in background
     threading.Thread(target=start_server, daemon=True).start()
 
     ###### communication block end
