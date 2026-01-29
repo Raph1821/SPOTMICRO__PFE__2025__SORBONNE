@@ -2,9 +2,10 @@ import time
 import cv2
 import socket
 #from V4sign_detector import get_sign_command, cap
-from V5_camera_sign_detector import get_sign_command, cap
+from V5_camera_sign_detector import get_sign_command, latest_frame, cap
 from robot_responses import robot_reply
 from robot_tts import speak
+
 
 
 
@@ -76,6 +77,14 @@ last_fired = None
 last_fire_time = 0
 
 
+
+# label for return frames
+def put_label(frame, text):
+    cv2.putText(frame, text, (380, 460),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1.5, (0, 0, 255), 3, cv2.LINE_AA)
+
+
 def fire_sign_command():
     global last_fired, last_fire_time
 
@@ -86,6 +95,8 @@ def fire_sign_command():
     # internal and in parallel, so the external time.sleep(x) in main will be effective for display
     # however let's keep this one so it works when called by publisher function
     if time.time() - last_fire_time < COOLDOWN_TIME:
+        put_label(frame, "Sending...")
+        #time.sleep(2)
         return None, frame
 
     # Decay all accumulators
@@ -133,11 +144,13 @@ if __name__ == "__main__":
     while cap.isOpened():
         command, frame = fire_sign_command()
 
-        global latest_frame
-        latest_frame = frame.copy()
+        # Update the MJPEG server’s latest_frame
+        latest_frame = frame.copy() # frame imported
 
         if command :
             send_to_robot(command)
+            put_label(frame, "Sending...")
+            cv2.imshow('Hand Sign Detection', frame)
 
             ### voc chatbot
             reply = robot_reply(command)
@@ -145,6 +158,7 @@ if __name__ == "__main__":
             speak(reply)
             ###
 
+            #put_label(frame, "Sending...")
             #time.sleep(2) # cooldown not obligatory
             command = None
 

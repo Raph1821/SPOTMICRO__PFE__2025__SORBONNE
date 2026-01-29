@@ -6,13 +6,14 @@ import threading
 from flask import Flask, Response
 
 ###############################################
-USE_PHONE_CAMERA = True #########True#########
+USE_PHONE_CAMERA = False #########True#########|
 ###############################################
 
 ########################################################
 PHONE_STREAM_URL =  "http://admin:vanre@10.206.39.22:8081/video" #http:// admin : admin password : vanre @port/video  # example
 ########################################################
 
+latest_frame = None
 
 
 if USE_PHONE_CAMERA:
@@ -20,7 +21,6 @@ if USE_PHONE_CAMERA:
 
     ####################################################
     app = Flask(__name__)
-    latest_frame = None
 
 
     def mjpeg_stream():
@@ -29,14 +29,24 @@ if USE_PHONE_CAMERA:
             if latest_frame is None:
                 continue
 
-            flipped = cv2.flip(frame, 1) # flipping happens here before encoding
-            ret, jpeg = cv2.imencode('.jpg', flipped)
-            frame = jpeg.tobytes()
+            # Flip or process the frame BEFORE encoding
+            processed = cv2.flip(latest_frame, 1)
 
-
+            ret, jpeg = cv2.imencode('.jpg', processed)
+            frame_bytes = jpeg.tobytes()
 
             yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+
+    @app.route('/snapshot')
+    def snapshot():
+        global latest_frame
+        if latest_frame is None:
+            return "No frame yet", 503
+
+        # Encode the processed frame as JPEG
+        ret, jpeg = cv2.imencode('.jpg', latest_frame)
+        return Response(jpeg.tobytes(), mimetype='image/jpeg')
 
 
     @app.route('/processed')
@@ -80,6 +90,7 @@ HAND_CONNECTIONS = [
     (13,17), (17,18), (18,19), (19,20) # Pinky
 ]
 
+
 def draw_landmarks(image, landmarks):
     h, w, _ = image.shape
 
@@ -93,6 +104,14 @@ def draw_landmarks(image, landmarks):
     for lm in landmarks:
         cx, cy = int(lm.x * w), int(lm.y * h)
         cv2.circle(image, (cx, cy), 5, (0, 255, 0), -1)
+
+
+# label for return frames
+def put_label(frame, text):
+    cv2.putText(frame, text, (30, 60),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1.5, (0, 255, 0), 3, cv2.LINE_AA)
+
 
 
 def is_open_hand(landmarks):
@@ -285,30 +304,37 @@ def get_sign_command():
     landmarks = results.hand_landmarks[0]  # Access the first detected hand
 
     draw_landmarks(frame, landmarks)
+    cv2.imwrite("latest_processed.jpg", frame) # save new picture with landmarks
 
-
-    # Detect open hand → STAND, IMPULSE
+    # Detect open hand -> STAND, IMPULSE
     if is_open_hand(landmarks):
+        put_label(frame, "STAND")
         return "stand", frame#, IMPULSE
 
-    # Detect love hand → idle, IMPULSE
+    # Detect love hand -> idle, IMPULSE
     if is_love_hand(landmarks):
+        put_label(frame, "IDLE")
         return "idle", frame#, IMPULSE
 
-    # Detect ok hand → walk, IMPULSE
+    # Detect ok hand -> walk, IMPULSE
     if is_ok_hand(landmarks):
+        put_label(frame, "WALK")
         return "walk", frame#, IMPULSE
 
-    # Detect ok hand → direction , ADDUP
+    # Detect ok hand -> direction , ADDUP
     if is_index_pointing(landmarks):
-        return index_direction(landmarks), frame#, ADDUP
+        direction = index_direction(landmarks)
+        put_label(frame, direction)
+        return direction, frame#, ADDUP
 
     # FORWARD gesture
     if is_forward_military(landmarks):
+        put_label(frame, "FORWARD")
         return "forward", frame
 
     # BACKWARD gesture
     if is_backward_drink_thumb(landmarks):
+        put_label(frame, "BACKWARD")
         return "backward", frame
 
     ############ UNUSED
