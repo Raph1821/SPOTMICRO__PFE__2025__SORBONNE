@@ -154,7 +154,7 @@ if __name__ == "__main__":
 
             ### voc chatbot
             reply = robot_reply(command)
-            print("🤖 Robot :", reply)
+            print("🤖 Spotmini :", reply)
             speak(reply)
             ###
 
@@ -177,11 +177,13 @@ if __name__ == "__main__":
             print("NO sign detected")
         """
 
+
         if frame is not None:
             cv2.imshow('Hand Sign Detection', frame)
 
         if cv2.waitKey(5) & 0xFF == 27:
             break
+
 
     cap.release()
     cv2.destroyAllWindows()

@@ -59,7 +59,7 @@ if USE_PHONE_CAMERA:
         app.run(host="0.0.0.0", port=8080, debug=False, threaded=True)
 
 
-    # Start server in background
+    # Start flask server in background
     threading.Thread(target=start_server, daemon=True).start()
 
     ###### communication block end

@@ -6,8 +6,8 @@ def robot_reply(command):
         "idle":         "hhamhhamm...",# "Je passe en mode repos.",
         "walk":         "Yipyipyippy!", #"Mode marche activé.",
         "forward":      "Quackwoof", # "J'avance.",
-        "backward":     "Je recule.",
-        "rotate_left":  "Je tourne à gauche.",
-        "rotate_right": "Je tourne à droite."
+        "backward":     "aaouh",
+        "rotate_left":  "heehee",
+        "rotate_right": "ouhouh"
     }
     return responses.get(command, "Commande reçue, mais je ne comprends pas encore cette action.")
