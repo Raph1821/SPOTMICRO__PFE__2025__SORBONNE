@@ -112,9 +112,6 @@ def fire_sign_command():
     accumulators[command] += 2  #1 # boost for detected gesture (+2 because decay is -1 every frame)
     print(accumulators[command]) #debug accumulation
 
-    # Check if any accumulator crosses threshold
-    # After updating accumulators elsewhere...
-
     # Check if any accumulator crosses the threshold and fire (unless it's the last fired)
     for gesture, value in accumulators.items():
         if value >= THRESHOLD and gesture != last_fired:
