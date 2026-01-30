@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/ros-i2cpwmboard" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/spot_micro_motion_cmd/libs/spot_micro_kinematics_cpp" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/spot_micro_plot/scripts/spot_micro_kinematics_python" vcs="Git" />
+  </component>
+</project>
