@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="i2cpwm_board" name="i2cpwm_board_node" type="i2cpwm_board" output="screen" >
+    <param name="i2c_device_number" value="1" />
+    <param name="i2c_address" value="0x40" />
+    <param name="pwm_frequency" value="50" />
+  </node>
+</launch>

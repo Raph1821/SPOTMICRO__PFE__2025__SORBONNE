@@ -1,4 +1,4 @@
-# Spot Micro Quadruped Project - Sorbonne University End of Studies Project (PFE 2025)
+# Spot Micro Quadruped Project - Sorbonne University Master's Thesis Project (PFE 2025-2026)
 
 **Base Project Credit**: This project is built upon the original Spot Micro Quadruped project. We extend our gratitude to the original developers and the open-source community for the foundational work.
 

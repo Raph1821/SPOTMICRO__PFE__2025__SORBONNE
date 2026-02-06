@@ -253,16 +253,12 @@ Complete installation guide for Spot Micro Quadruped Robot on Raspberry Pi 4B 8G
    
    **Check if submodules exist:**
    ```bash
-   ls ros-i2cpwmboard/
    ls spot_micro_motion_cmd/libs/spot_micro_kinematics_cpp/
    ls spot_micro_plot/scripts/spot_micro_kinematics_python/
    ```
    
    **If folder doesn't exist or is empty, clone manually:**
-   ```bash
-   # Clone i2cpwm_board package
-   git clone https://github.com/mentor-dyun/ros-i2cpwmboard.git ros-i2cpwmboard
-   
+   ```bash   
    # Clone spot_micro_kinematics_cpp
    mkdir -p spot_micro_motion_cmd/libs
    cd ~/catkin_ws/src/SPOTMICRO__PFE__2025__SORBONNE__SACLAY/spot_micro_motion_cmd/libs
