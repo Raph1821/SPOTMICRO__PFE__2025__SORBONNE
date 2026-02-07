@@ -7,10 +7,10 @@ The servo configuration dictionary is contained within the configuration file `s
 ```yaml
 num_servos: 12
 servo_max_angle_deg: 82.5
-RF_3: {num: 1, center: 306, range: 385, direction:  1, center_angle_deg:  84.0}
-RF_2: {num: 2, center: 306, range: 385, direction:  1, center_angle_deg: -27.9}
-RF_1: {num: 3, center: 306, range: 396, direction: -1, center_angle_deg:  -5.4}
-RB_3: {num: 4, center: 306, range: 394, direction:  1, center_angle_deg:  90.4}
+RF_3: {num: 1, center: 306, range: 383.2, direction:  1, center_angle_deg:  39.62}
+RF_2: {num: 2, center: 306, range: 401.5, direction:  1, center_angle_deg: -71.92}
+RF_1: {num: 3, center: 306, range: 392.3, direction: -1, center_angle_deg:  -19.77}
+RB_3: {num: 4, center: 306, range: 383.2, direction:  1, center_angle_deg:  50.38}
 .
 .
 .
