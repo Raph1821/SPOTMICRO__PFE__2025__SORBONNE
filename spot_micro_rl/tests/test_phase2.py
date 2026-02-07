@@ -22,14 +22,13 @@ def test_imports():
     
     try:
         # Phase 1
-        from spot_micro_rl import MotorModel
-        from spot_micro_rl import SpotEnvRandomizer, MinimalRandomizer, AggressiveRandomizer
-        from spot_micro_rl import HeightField, FlatTerrain, GentleTerrain, RoughTerrain
+        from motor import MotorModel
+        from spot_env_randomizer import SpotEnvRandomizer, MinimalRandomizer, AggressiveRandomizer
+        from heightfield import HeightField, FlatTerrain, GentleTerrain, RoughTerrain
         
         # Core
-        from spot_micro_rl import SpotMicroEnv
-        from spot_micro_rl import Policy, Normalizer, ARSAgent
-        
+        from spot_env import SpotMicroEnv, SpotEnvRandomizer
+        from policy import Policy, Normalizer, ARSAgent
         print("✅ All imports successful!")
         print("   - Phase 1 components: MotorModel, Randomizers, HeightField")
         print("   - Core components: SpotMicroEnv, Policy, Normalizer, ARSAgent")

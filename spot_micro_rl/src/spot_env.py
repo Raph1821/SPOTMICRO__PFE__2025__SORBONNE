@@ -348,11 +348,23 @@ class SpotMicroEnv(gym.Env):
         # Identifier les joints
         self._setup_joints()
         
-        # Configurer les joints à leur position neutre
-        neutral_angles = np.zeros(12)
+        # Configurer les joints à leur position de STAND (pose stable)
+        # Ces angles viennent de src_RL/spot.py INIT_POSES['stand']
+        # Format: [shoulder, elbow, wrist] x 4 pattes (FL, FR, BL, BR)
+        stand_angles = np.array([
+            -0.15192765, -0.7552236, 1.5104472,  # Front-left
+            0.15192765, -0.7552236, 1.5104472,   # Front-right
+            -0.15192765, -0.7552236, 1.5104472,  # Back-left
+            0.15192765, -0.7552236, 1.5104472    # Back-right
+        ])
+        
         for i, joint_id in enumerate(self.joint_ids):
-            if i < len(neutral_angles):
-                p.resetJointState(self.robot_id, joint_id, neutral_angles[i])
+            if i < len(stand_angles):
+                p.resetJointState(self.robot_id, joint_id, stand_angles[i])
+        
+        # Laisser le robot se stabiliser dans cette pose (important!)
+        for _ in range(100):
+            p.stepSimulation()
         
         # Domain Randomization (CRITIQUE pour sim-to-real)
         if self.env_randomizer is not None:

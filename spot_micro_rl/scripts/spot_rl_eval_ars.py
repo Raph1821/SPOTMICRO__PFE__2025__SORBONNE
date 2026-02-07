@@ -12,8 +12,8 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 
-from spot_micro_rl.ars import ARSAgent, Normalizer, Policy
-from spot_micro_rl.spot_env import make_env
+from ars import ARSAgent, Normalizer, Policy
+from spot_env import make_env
 
 
 def evaluate(args):

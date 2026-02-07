@@ -601,6 +601,32 @@ for step in range(1_000_000):
 
 ## Utilisation Pratique
 
+### ⚠️ Scénario 0: Vérification CRITIQUE Avant Entraînement
+
+**IMPORTANT:** Avant de lancer un entraînement, vérifiez que le robot est correctement initialisé !
+
+**Problème:** Si le robot est mal initialisé (pose instable, tombé), il tombera immédiatement à chaque reset et l'entraînement sera **inutile** car l'agent démarre toujours dans un état d'échec.
+
+**Solution:** Utilisez `env_tester.py` pour vérifier visuellement l'initialisation :
+
+```bash
+# Test de l'environnement avec visualisation
+python scripts/env_tester.py
+
+# Options
+python scripts/env_tester.py --episodes 5 --steps 1000
+```
+
+**Checklist visuelle:**
+- ✅ Le robot démarre **debout** (pas couché ou tombé)
+- ✅ Les pattes sont **pliées** de manière réaliste (angles ~-0.15, -0.76, 1.51 rad)
+- ✅ Le corps est **horizontal** à ~15-20cm du sol
+- ✅ Le robot **tient sa pose** pendant 5 secondes sans tomber
+
+**Si le robot tombe immédiatement:** Vérifiez les angles initiaux dans `spot_env.py` (ligne ~353, `stand_angles`)
+
+---
+
 ### Scénario 1: Entraînement Rapide (ARS)
 
 **Objectif:** Policy fonctionnelle en 2-3 heures
@@ -609,17 +635,20 @@ for step in range(1_000_000):
 # 1. Installer dépendances
 pip install -r requirements.txt
 
-# 2. Tester environnement
+# 2. VÉRIFIER L'INITIALISATION (CRITIQUE!)
+python scripts/env_tester.py
+
+# 3. Tester environnement (optionnel)
 python tests/test_phase1.py  # Validation Phase 1
 python tests/test_phase2.py  # Validation Phase 2
 
-# 3. Entraîner avec ARS (multi-workers)
+# 4. Entraîner avec ARS (multi-workers)
 python scripts/spot_rl_train_ars.py \
     --num_episodes 5000 \
     --num_workers 4 \
     --save_frequency 500
 
-# 4. Évaluer policy
+# 5. Évaluer policy
 python scripts/spot_rl_eval.py \
     --policy_path models/checkpoints/spot_ars_5000.pkl \
     --num_episodes 10
@@ -637,10 +666,13 @@ python scripts/spot_rl_eval.py \
 # 1. Installer PyTorch
 pip install torch
 
-# 2. Valider Phase 3
+# 2. VÉRIFIER L'INITIALISATION (CRITIQUE!)
+python scripts/env_tester.py
+
+# 3. Valider Phase 3 (optionnel)
 python tests/test_phase3.py
 
-# 3. Entraîner avec SAC (CUDA)
+# 4. Entraîner avec SAC (CUDA)
 python scripts/spot_rl_train_sac.py \
     --episodes 10000 \
     --eval_freq 100 \

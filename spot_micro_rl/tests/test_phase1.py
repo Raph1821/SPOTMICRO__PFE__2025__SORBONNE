@@ -30,22 +30,22 @@ def test_imports():
     
     try:
         # Core imports
-        from src.spot_micro_rl.spot_env import SpotMicroEnv
+            from spot_env import SpotMicroEnv
         
         # Phase 1 imports
-        from src.spot_micro_rl.motor import MotorModel
-        from src.spot_micro_rl.env_randomizer_base import EnvRandomizerBase
-        from src.spot_micro_rl.spot_env_randomizer import (
-            SpotEnvRandomizer,
-            MinimalRandomizer,
-            AggressiveRandomizer
-        )
-        from src.spot_micro_rl.heightfield import (
-            HeightField,
-            FlatTerrain,
-            GentleTerrain,
-            RoughTerrain
-        )
+            from motor import MotorModel
+            from env_randomizer_base import EnvRandomizerBase
+            from spot_env_randomizer import (
+                SpotEnvRandomizer,
+                MinimalRandomizer,
+                AggressiveRandomizer
+            )
+            from heightfield import (
+                HeightField,
+                FlatTerrain,
+                GentleTerrain,
+                RoughTerrain
+            )
         
         print("✅ All imports successful!")
         print("   - Core: SpotMicroEnv")
@@ -68,7 +68,7 @@ def test_motor_models():
     print("=" * 70)
     
     try:
-        from src.spot_micro_rl.motor import MotorModel
+           from motor import MotorModel
         
         # Create motor model
         motor = MotorModel(
@@ -120,11 +120,11 @@ def test_randomizers():
     print("=" * 70)
     
     try:
-        from src.spot_micro_rl.spot_env_randomizer import (
-            SpotEnvRandomizer,
-            MinimalRandomizer,
-            AggressiveRandomizer
-        )
+            from spot_env_randomizer import (
+                SpotEnvRandomizer,
+                MinimalRandomizer,
+                AggressiveRandomizer
+            )
         
         # Test all 3 randomizers
         randomizers = [
@@ -160,11 +160,11 @@ def test_terrain():
     print("=" * 70)
     
     try:
-        from src.spot_micro_rl.heightfield import (
-            FlatTerrain,
-            GentleTerrain,
-            RoughTerrain
-        )
+            from heightfield import (
+                FlatTerrain,
+                GentleTerrain,
+                RoughTerrain
+            )
         
         # Test all terrain types
         terrains = [
@@ -201,10 +201,10 @@ def test_environment_with_phase1():
     print("=" * 70)
     
     try:
-        from src.spot_micro_rl.spot_env import SpotMicroEnv
-        from src.spot_micro_rl.motor import MotorModel
-        from src.spot_micro_rl.spot_env_randomizer import SpotEnvRandomizer
-        from src.spot_micro_rl.heightfield import GentleTerrain
+           from spot_env import SpotMicroEnv
+           from motor import MotorModel
+           from spot_env_randomizer import SpotEnvRandomizer
+           from heightfield import GentleTerrain
         
         # Create motor models
         motor_models = {

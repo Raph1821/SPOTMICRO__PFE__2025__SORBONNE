@@ -25,10 +25,10 @@ import csv
 # Add src directory to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
 
-from spot_micro_rl.spot_env import SpotMicroEnv
-from spot_micro_rl.td3 import TD3Agent
-from spot_micro_rl.spot_env_randomizer import SpotEnvRandomizer
-from spot_micro_rl.motor import MotorModel
+from spot_env import SpotMicroEnv
+from td3 import TD3Agent
+from spot_env_randomizer import SpotEnvRandomizer
+from motor import MotorModel
 
 
 def evaluate_policy(env, agent, eval_episodes=5):

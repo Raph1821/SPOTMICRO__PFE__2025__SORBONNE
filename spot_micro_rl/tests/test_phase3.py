@@ -31,13 +31,13 @@ def test_imports():
     print("=" * 70)
     
     try:
-        from src.spot_micro_rl.networks import (
+        from networks import (
             Actor, Critic, GaussianActor, SoftCritic,
             soft_update, hard_update
         )
-        from src.spot_micro_rl.replay_buffer import ReplayBuffer, PrioritizedReplayBuffer
-        from src.spot_micro_rl.sac import SACAgent, SACPolicy
-        from src.spot_micro_rl.td3 import TD3Agent, TD3Policy
+        from replay_buffer import ReplayBuffer, PrioritizedReplayBuffer
+        from sac import SACAgent, SACPolicy
+        from td3 import TD3Agent, TD3Policy
         
         print("✅ All imports successful!")
         print("   - Networks: Actor, Critic, GaussianActor, SoftCritic")
@@ -58,7 +58,7 @@ def test_replay_buffer():
     print("=" * 70)
     
     try:
-        from src.spot_micro_rl.replay_buffer import ReplayBuffer
+        from replay_buffer import ReplayBuffer
         
         # Create buffer
         state_dim = 46
@@ -103,7 +103,7 @@ def test_td3_agent():
     print("=" * 70)
     
     try:
-        from src.spot_micro_rl.td3 import TD3Agent
+        from td3 import TD3Agent
         
         state_dim = 46
         action_dim = 14
@@ -156,7 +156,7 @@ def test_sac_agent():
     print("=" * 70)
     
     try:
-        from src.spot_micro_rl.sac import SACAgent
+        from sac import SACAgent
         
         state_dim = 46
         action_dim = 14
@@ -212,8 +212,8 @@ def test_save_load():
     print("=" * 70)
     
     try:
-        from src.spot_micro_rl.td3 import TD3Agent
-        from src.spot_micro_rl.sac import SACAgent
+        from td3 import TD3Agent
+        from sac import SACAgent
         
         state_dim = 46
         action_dim = 14
@@ -288,8 +288,8 @@ def test_training_step():
     print("=" * 70)
     
     try:
-        from src.spot_micro_rl.td3 import TD3Agent
-        from src.spot_micro_rl.sac import SACAgent
+        from td3 import TD3Agent
+        from sac import SACAgent
         
         state_dim = 46
         action_dim = 14

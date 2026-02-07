@@ -28,10 +28,10 @@ import csv
 # Add src directory to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
 
-from spot_micro_rl.spot_env import SpotMicroEnv
-from spot_micro_rl.td3 import TD3Agent
-from spot_micro_rl.parallel_env import ParallelEnv, DummyParallelEnv
-from spot_micro_rl.spot_env_randomizer import SpotEnvRandomizer
+from spot_env import SpotMicroEnv
+from td3 import TD3Agent
+from parallel_env import ParallelEnv, DummyParallelEnv
+from spot_env_randomizer import SpotEnvRandomizer
 
 
 def make_env(render=False, terrain_randomization=True):

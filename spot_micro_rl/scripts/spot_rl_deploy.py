@@ -14,10 +14,10 @@ from sensor_msgs.msg import JointState, Imu
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Float64MultiArray
 
-from spot_micro_rl.ars import ARSAgent
-from spot_micro_rl.spot_kinematics import SpotModel
-from spot_micro_rl.bezier_gait import BezierGait
-from spot_micro_rl.lie_algebra import RPY, RpToTrans
+from ars import ARSAgent
+from spot_kinematics import SpotModel
+from bezier_gait import BezierGait
+from lie_algebra import RPY, RpToTrans
 
 
 class SpotRLController:

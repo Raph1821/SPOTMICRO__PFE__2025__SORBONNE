@@ -24,7 +24,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 package_dir = os.path.join(script_dir, '..', 'src')
 sys.path.insert(0, package_dir)
 
-from spot_micro_rl import (
+from spot_env import (
     SpotMicroEnv,
     Policy,
     Normalizer,
