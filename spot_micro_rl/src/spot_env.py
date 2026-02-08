@@ -33,12 +33,12 @@ except ImportError:
     ROS_AVAILABLE = False
     print("[WARNING] ROS non disponible, mode PyBullet pur")
 
-from .bezier_gait import BezierGait
-from .spot_kinematics import SpotModel
-from .lie_algebra import RpToTrans, TransToRp, TransInv, RPY
-from .motor import MotorModel
-from .spot_env_randomizer import SpotEnvRandomizer
-from .heightfield import HeightField
+from bezier_gait import BezierGait
+from spot_kinematics import SpotModel
+from lie_algebra import RpToTrans, TransToRp, TransInv, RPY
+from motor import MotorModel
+from spot_env_randomizer import SpotEnvRandomizer
+from heightfield import HeightField
 
 def make_env(render=False, use_ros=False, max_timesteps=1000, urdf_path=None, **kwargs):
     """

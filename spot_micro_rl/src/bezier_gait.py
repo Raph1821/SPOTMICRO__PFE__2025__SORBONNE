@@ -9,7 +9,7 @@ Based on:
 """
 
 import numpy as np
-from .lie_algebra import TransToRp
+from lie_algebra import TransToRp
 import copy
 
 STANCE = 0

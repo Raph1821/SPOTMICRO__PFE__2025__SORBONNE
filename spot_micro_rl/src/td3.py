@@ -18,8 +18,8 @@ import torch.optim as optim
 import os
 import pickle
 
-from .networks import Actor, Critic, soft_update, hard_update
-from .replay_buffer import ReplayBuffer
+from networks import Actor, Critic, soft_update, hard_update
+from replay_buffer import ReplayBuffer
 
 
 class TD3Agent:

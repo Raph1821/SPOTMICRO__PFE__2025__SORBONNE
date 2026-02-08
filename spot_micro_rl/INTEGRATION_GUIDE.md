@@ -9,14 +9,13 @@
 ## Table des Matières
 
 1. [Vue d'Ensemble](#vue-densemble)
-2. [Architecture du Système](#architecture-du-système)
-3. [Phase 1: Réalisme Physique](#phase-1-réalisme-physique)
-4. [Phase 2: Entraînement Avancé](#phase-2-entraînement-avancé)
-5. [Phase 3: Deep RL](#phase-3-deep-rl)
-6. [Interactions entre Composants](#interactions-entre-composants)
-7. [Flux de Données](#flux-de-données)
-8. [Utilisation Pratique](#utilisation-pratique)
-9. [Dépendances](#dépendances)
+2. [Phase 1: Réalisme Physique](#phase-1-réalisme-physique)
+3. [Phase 2: Entraînement Avancé](#phase-2-entraînement-avancé)
+4. [Phase 3: Deep RL](#phase-3-deep-rl)
+5. [Interactions entre Composants](#interactions-entre-composants)
+6. [Flux de Données](#flux-de-données)
+7. [Utilisation Pratique](#utilisation-pratique)
+8. [Dépendances](#dépendances)
 
 ---
 
@@ -31,65 +30,6 @@ Ce projet implémente un système complet d'apprentissage par renforcement pour 
 | **Phase 3** | Algorithmes avancés | SAC, TD3, neural networks |
 
 **Résultat:** Un système modulaire permettant d'entraîner SpotMicro avec 3 algorithmes (ARS, SAC, TD3) dans un environnement réaliste.
-
----
-
-## Architecture du Système
-
-```
-spot_micro_rl/
-│
-├── src/spot_micro_rl/           # Package Python principal
-│   ├── __init__.py              # Exports (v2.0.0)
-│   │
-│   ├── CORE (Base)              # Composants de base
-│   │   ├── spot_env.py          # Environnement Gym (46 dims)
-│   │   ├── spot_kinematics.py   # Modèle cinématique
-│   │   ├── leg_kinematics.py    # IK pattes
-│   │   ├── bezier_gait.py       # Générateur de démarche
-│   │   └── lie_algebra.py       # Transformations 3D
-│   │
-│   ├── PHASE 1 (Physique)       # Réalisme simulation
-│   │   ├── motor.py             # Modèle moteur DC
-│   │   ├── env_randomizer_base.py
-│   │   ├── spot_env_randomizer.py  # 3 profils randomization
-│   │   └── heightfield.py       # 4 types de terrain
-│   │
-│   ├── PHASE 2 (ARS)            # Algorithme de base
-│   │   └── ars.py               # Augmented Random Search
-│   │
-│   └── PHASE 3 (Deep RL)        # Algorithmes neuronaux
-│       ├── networks.py          # Actor/Critic (PyTorch)
-│       ├── replay_buffer.py     # Experience replay
-│       ├── sac.py               # Soft Actor-Critic
-│       └── td3.py               # Twin Delayed DDPG
-│
-├── scripts/                     # Scripts exécutables
-│   ├── spot_rl_train_ars.py    # Phase 2: Entraînement ARS
-│   ├── spot_rl_train_sac.py    # Phase 3: Entraînement SAC
-│   ├── spot_rl_train_td3.py    # Phase 3: Entraînement TD3
-│   ├── spot_rl_eval.py         # Évaluation policies
-│   └── gmbc_data.py            # Analyse GMBC vs Bezier
-│
-├── tests/                       # Tests de validation
-│   ├── test_phase1.py          # Validation Phase 1 (5 tests)
-│   ├── test_phase2.py          # Validation Phase 2 (6 tests)
-│   └── test_phase3.py          # Validation Phase 3 (7 tests)
-│
-├── models/                      # Modèles sauvegardés
-│   ├── checkpoints/            # ARS (.pkl), SAC (.pth), TD3 (.pth)
-│   └── README.md
-│
-├── results/                     # Résultats d'entraînement
-│   ├── training_logs/          # CSV (ARS, SAC, TD3)
-│   ├── survival_data/          # Pickle (GMBC analysis)
-│   └── plots/                  # Graphiques matplotlib
-│
-├── config/                      # Configurations ROS
-├── launch/                      # Launch files ROS
-└── README.md                    # Documentation principale
-```
-
 ---
 
 ## Phase 1: Réalisme Physique
@@ -262,7 +202,7 @@ curriculum = [
 
 ```bash
 # Entraînement basique
-python scripts/spot_rl_train_ars.py --num_episodes 10000
+python scripts/spot_rl_train_ars.py --num_episodes 1000
 
 # Avec multi-workers (4 CPU)
 python scripts/spot_rl_train_ars.py --num_workers 4

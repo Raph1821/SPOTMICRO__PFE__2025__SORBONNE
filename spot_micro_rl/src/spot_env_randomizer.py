@@ -15,7 +15,7 @@ Adapted from spot_mini_mini for RL_app
 
 import numpy as np
 import pybullet as p
-from .env_randomizer_base import EnvRandomizerBase
+from env_randomizer_base import EnvRandomizerBase
 
 # Randomization ranges (relative)
 SPOT_BASE_MASS_ERROR_RANGE = (-0.2, 0.2)    # ±20% base mass variation

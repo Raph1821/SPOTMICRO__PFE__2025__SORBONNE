@@ -17,8 +17,8 @@ import torch.nn as nn
 import torch.optim as optim
 import os
 
-from .networks import GaussianActor, SoftCritic, soft_update, hard_update
-from .replay_buffer import ReplayBuffer
+from networks import GaussianActor, SoftCritic, soft_update, hard_update
+from replay_buffer import ReplayBuffer
 
 
 class SACAgent:

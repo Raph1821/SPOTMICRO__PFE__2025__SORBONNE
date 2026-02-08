@@ -6,8 +6,8 @@ Adapted for RL_app robot dimensions from config file
 
 import numpy as np
 from collections import OrderedDict
-from .leg_kinematics import LegIK
-from .lie_algebra import RpToTrans, TransToRp, TransInv, RPY
+from leg_kinematics import LegIK
+from lie_algebra import RpToTrans, TransToRp, TransInv, RPY
 
 
 class SpotModel:
