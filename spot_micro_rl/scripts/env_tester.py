@@ -1,159 +1,209 @@
-#!/usr/bin/env python3
-"""
-Environment Tester for SpotMicro RL
-====================================
+#! /usr/bin/env python3 
 
-Test visual de l'initialisation du robot et des poses.
-Permet de vérifier que le robot démarre dans une pose stable.
-
-Usage:
-    python scripts/env_tester.py
-    python scripts/env_tester.py --episodes 5
-"""
-
+import numpy as np
+import matplotlib.pyplot as plt
+import copy
 import sys
+
+sys.path.append('../')
+
+from src.GymEnvs.spot_bezier_env import spotBezierEnv
+from src.util.gui import GUI
+from src.Kinematics.SpotKinematics import SpotModel
+from src.Kinematics.LieAlgebra import RPY
+from src.GaitGenerator.Bezier import BezierGait
+
+# TESTING
+from src.OpenLoopSM.SpotOL import BezierStepper
+import time
 import os
 import argparse
-import time
-import numpy as np
 
-# Add src to path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
-
-from spot_env import SpotMicroEnv
-
-
-def test_env(num_episodes=3, render=True, max_steps=500):
-    """
-    Test l'environnement avec visualisation PyBullet.
-    
-    Args:
-        num_episodes: Nombre d'épisodes de test
-        render: Activer le rendu PyBullet GUI
-        max_steps: Nombre max de steps par épisode
-    """
-    print("=" * 70)
-    print("SPOT MICRO RL - ENVIRONMENT TESTER")
-    print("=" * 70)
-    print("\nCe script teste l'initialisation et la stabilité du robot.")
-    print("Vérifiez visuellement que le robot :")
-    print("  ✓ Démarre debout (pas couché ou tombé)")
-    print("  ✓ Les pattes sont pliées de manière réaliste")
-    print("  ✓ Le corps est horizontal à ~15-20cm du sol")
-    print("=" * 70)
-    
-    # Créer l'environnement
-    print(f"\n[1/3] Création de l'environnement...")
-    env = SpotMicroEnv(
-        render=render,
-        motor_model_enabled=False,  # Pas de motor models pour test rapide
-        env_randomizer=None,        # Pas de randomization pour test
-        terrain_type='flat',        # Terrain plat pour test
-        max_timesteps=max_steps
-    )
-    
-    state_dim = env.observation_space.shape[0]
-    action_dim = env.action_space.shape[0]
-    
-    print(f"✅ Environnement créé")
-    print(f"   State dim: {state_dim}")
-    print(f"   Action dim: {action_dim}")
-    
-    # Test de reset
-    print(f"\n[2/3] Test de reset initial...")
-    state = env.reset()
-    print(f"✅ Reset réussi")
-    print(f"   Observation shape: {state.shape}")
-    print(f"   Position du corps (x, y, z): {state[40:43]}")
-    
-    input("\nAppuyez sur ENTRÉE pour voir le robot tenir sa pose pendant 5 secondes...")
-    
-    # Tenir la pose (action nulle)
-    print(f"\n[3/3] Test de maintien de pose (5 secondes)...")
-    for step in range(250):  # 5 sec à 50Hz
-        action = np.zeros(action_dim)  # Action nulle = tenir la pose
-        state, reward, done, info = env.step(action)
-        
-        if step % 50 == 0:
-            print(f"  Step {step}/250 - Position Z: {state[42]:.3f}m - Reward: {reward:.2f}")
-        
-        if done:
-            print(f"⚠️  Robot tombé à step {step}!")
-            break
-        
-        time.sleep(0.02)  # 50Hz
-    
-    if not done:
-        print(f"✅ Robot stable pendant 5 secondes!")
-    
-    input("\nAppuyez sur ENTRÉE pour tester plusieurs resets...")
-    
-    # Test de plusieurs épisodes
-    print(f"\n{'='*70}")
-    print(f"TEST DE PLUSIEURS ÉPISODES")
-    print(f"{'='*70}")
-    
-    for ep in range(num_episodes):
-        print(f"\n📍 Épisode {ep+1}/{num_episodes}")
-        state = env.reset()
-        
-        episode_reward = 0
-        survived_steps = 0
-        
-        for step in range(max_steps):
-            # Action aléatoire petite (pour tester stabilité)
-            action = np.random.randn(action_dim) * 0.1
-            action = np.clip(action, -1.0, 1.0)
-            
-            state, reward, done, info = env.step(action)
-            episode_reward += reward
-            survived_steps = step + 1
-            
-            if done:
-                break
-        
-        print(f"  Récompense totale: {episode_reward:.2f}")
-        print(f"  Steps survécus: {survived_steps}/{max_steps}")
-        
-        if survived_steps < 50:
-            print(f"  ⚠️  Robot instable (tombé rapidement)")
-        elif survived_steps < 200:
-            print(f"  ⚙️  Stabilité moyenne")
-        else:
-            print(f"  ✅ Robot stable")
-        
-        time.sleep(1.0)
-    
-    # Fermer l'environnement
-    env.close()
-    
-    print(f"\n{'='*70}")
-    print("TEST TERMINÉ")
-    print(f"{'='*70}")
-    print("\nSi le robot démarre debout et tient sa pose, l'entraînement peut commencer.")
-    print("Si le robot tombe immédiatement, vérifiez les angles initiaux dans spot_env.py.")
+# ARGUMENTS
+descr = "Spot Mini Mini Environment Tester (No Joystick)."
+parser = argparse.ArgumentParser(description=descr)
+parser.add_argument("-hf",
+                    "--HeightField",
+                    help="Use HeightField",
+                    action='store_true')
+parser.add_argument("-r",
+                    "--DebugRack",
+                    help="Put Spot on an Elevated Rack",
+                    action='store_true')
+parser.add_argument("-p",
+                    "--DebugPath",
+                    help="Draw Spot's Foot Path",
+                    action='store_true')
+parser.add_argument("-ay",
+                    "--AutoYaw",
+                    help="Automatically Adjust Spot's Yaw",
+                    action='store_true')
+parser.add_argument("-ar",
+                    "--AutoReset",
+                    help="Automatically Reset Environment When Spot Falls",
+                    action='store_true')
+ARGS = parser.parse_args()
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description='Test SpotMicro RL Environment',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    """ The main() function. """
+
+    print("STARTING SPOT TEST ENV")
+    seed = 0
+    max_timesteps = 4e6
+
+    # Find abs path to this file
+    my_path = os.path.abspath(os.path.dirname(__file__))
+    results_path = os.path.join(my_path, "../results")
+    models_path = os.path.join(my_path, "../models")
+
+    if not os.path.exists(results_path):
+        os.makedirs(results_path)
+
+    if not os.path.exists(models_path):
+        os.makedirs(models_path)
+
+    if ARGS.DebugRack:
+        on_rack = True
+    else:
+        on_rack = False
+
+    if ARGS.DebugPath:
+        draw_foot_path = True
+    else:
+        draw_foot_path = False
+
+    if ARGS.HeightField:
+        height_field = True
+    else:
+        height_field = False
+
+    env = spotBezierEnv(render=True,
+                        on_rack=on_rack,
+                        height_field=height_field,
+                        draw_foot_path=draw_foot_path)
+
+    # Set seeds
+    env.seed(seed)
+    np.random.seed(seed)
+
+    state_dim = env.observation_space.shape[0]
+    print("STATE DIM: {}".format(state_dim))
+    action_dim = env.action_space.shape[0]
+    print("ACTION DIM: {}".format(action_dim))
+    max_action = float(env.action_space.high[0])
+
+    state = env.reset()
+
+    g_u_i = GUI(env.spot.quadruped)
+
+    # For spot.urdf
+    # spot = SpotModel(
+    #     shoulder_length=0.055,
+    #     elbow_length=0.11,
+    #     wrist_length=0.125,
+    #     hip_x=0.192,
+    #     hip_y=0.105,
+    #     foot_x=0.192,
+    #     foot_y=0.22,
+    #     height=0.155,
+    # )
+
+    # For spot_micro_pybullet_gen_ros.urdf
+    spot = SpotModel(
+        shoulder_length=0.052,    # joint front_left_leg  |y offset| = 0.052
+        elbow_length=0.12,        # joint front_left_foot |z offset| = 0.12
+        wrist_length=0.115,       # joint front_left_toe  |z offset| = 0.115
+        hip_x=0.186,              # 2 x 0.093 (shoulder x offset from base)
+        hip_y=0.072,              # 2 x 0.036 (shoulder y offset from base)
+        foot_x=0.186,             # same as hip_x (no fore-aft foot offset)
+        foot_y=0.176,             # hip_y + 2*shoulder_length = 0.072 + 2*0.052
+        height=0.16,              # INIT_POSITION z = 0.21
     )
-    
-    parser.add_argument('--episodes', type=int, default=3,
-                       help='Nombre d\'épisodes de test')
-    parser.add_argument('--steps', type=int, default=500,
-                       help='Nombre max de steps par épisode')
-    parser.add_argument('--no_render', action='store_true',
-                       help='Désactiver le rendu (mode headless)')
-    
-    args = parser.parse_args()
-    
-    test_env(
-        num_episodes=args.episodes,
-        render=not args.no_render,
-        max_steps=args.steps
-    )
+    T_bf0 = spot.WorldToFoot
+    T_bf = copy.deepcopy(T_bf0)
+
+    bzg = BezierGait(dt=env._time_step)
+
+    bz_step = BezierStepper(dt=env._time_step, mode=0)
+
+    action = env.action_space.sample()
+
+    FL_phases = []
+    FR_phases = []
+    BL_phases = []
+    BR_phases = []
+    yaw = 0.0
+
+    print("STARTED SPOT TEST ENV")
+    t = 0
+    while t < (int(max_timesteps)):
+
+        bz_step.ramp_up()
+
+        pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = bz_step.StateMachine(
+        )
+
+        pos, orn, StepLength, LateralFraction, YawRate, StepVelocity, ClearanceHeight, PenetrationDepth = g_u_i.UserInput(
+        )
+
+        yaw = env.return_yaw()
+
+        P_yaw = 5.0
+
+        if ARGS.AutoYaw:
+            YawRate += -yaw * P_yaw
+
+        # print("YAW RATE: {}".format(YawRate))
+
+        # TEMP
+        bz_step.StepLength = StepLength
+        bz_step.LateralFraction = LateralFraction
+        bz_step.YawRate = YawRate
+        bz_step.StepVelocity = StepVelocity
+
+        contacts = state[-4:]
+
+        FL_phases.append(env.spot.LegPhases[0])
+        FR_phases.append(env.spot.LegPhases[1])
+        BL_phases.append(env.spot.LegPhases[2])
+        BR_phases.append(env.spot.LegPhases[3])
+
+        # Get Desired Foot Poses
+        T_bf = bzg.GenerateTrajectory(StepLength, LateralFraction, YawRate,
+                                      StepVelocity, T_bf0, T_bf,
+                                      ClearanceHeight, PenetrationDepth,
+                                      contacts)
+        joint_angles = spot.IK(orn, pos, T_bf)
+
+        # for i, (key, Tbf_in) in enumerate(T_bf.items()):
+        #     print("{}: \t Angle: {}".format(key, np.degrees(joint_angles[i])))
+
+        env.pass_joint_angles(joint_angles.reshape(-1))
+        # Get External Observations
+        env.spot.GetExternalObservations(bzg, bz_step)
+        # Step
+        state, reward, done, _ = env.step(action)
+        if done:
+            print("DONE")
+            if ARGS.AutoReset:
+                env.reset()
+            # plt.plot()
+            # plt.plot(FL_phases, label="FL")
+            # plt.plot(FR_phases, label="FR")
+            # plt.plot(BL_phases, label="BL")
+            # plt.plot(BR_phases, label="BR")
+            # plt.xlabel("dt")
+            # plt.ylabel("value")
+            # plt.title("Leg Phases")
+            # plt.legend()
+            # plt.show()
+
+        # time.sleep(1.0)
+
+        t += 1
+    env.close()
+    print(joint_angles)
 
 
 if __name__ == '__main__':
