@@ -229,9 +229,9 @@ class Policy():
             # number of random expl_noise variations generated
             # each step
             # each one will be run for 2 epochs, + and -
-            num_deltas=4,
+            num_deltas=16,
             # used to update weights, sorted by highest rwrd
-            num_best_deltas=4,
+            num_best_deltas=16,
             # number of timesteps per episode per rollout
             episode_steps=2000,
             # weight of sampled exploration noise
